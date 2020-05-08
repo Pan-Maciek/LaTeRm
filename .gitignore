@@ -30,4 +30,5 @@ build
 
 #general
 *.class
-
+.metals
+.bloop

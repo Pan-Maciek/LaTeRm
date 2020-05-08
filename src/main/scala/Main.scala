@@ -14,7 +14,7 @@ import scalafx.application.JFXApp.PrimaryStage
 import scala.io.Source
 
 object Main extends JFXApp {
-
+  var command: String = ""
   val pane: Pane = new Pane {
     prefWidth = Config.WIDTH
     prefHeight = Config.HEIGHT
@@ -26,10 +26,8 @@ object Main extends JFXApp {
   }
 
   stage = new PrimaryStage {
-    title.value = "Foo"
+    title.value = "LaTeRm"
     scene = new Scene(Config.WIDTH, Config.HEIGHT) {
-      fill = Color.Blue
-
       root = new BorderPane {
         prefWidth = Config.WIDTH
         prefHeight = Config.HEIGHT
@@ -37,47 +35,19 @@ object Main extends JFXApp {
         top = label
         // Place for main component
         center = pane
-        fill = Color.Black
       }
     }
   }
 
-  stage.handleEvent(KeyEvent.KeyTyped) {
-    event: KeyEvent => {
-      val response = event.eventType match {
-        case KeyEvent.KeyPressed  => f"Key pressed ${event.character}"
-        case KeyEvent.KeyReleased => f"Key pressed ${event.character}"
-        case KeyEvent.KeyTyped    => f"Key typed ${event.character}"
-        case _                    => "I don't know what you just did"
+  stage.handleEvent(KeyEvent.KeyTyped) { event: KeyEvent =>
+    {
+      command = event.getCharacter match {
+        case "\n" => ""
+        case chr  => command ++ chr
       }
 
-      label.setText(response)
+      label.setText(command)
     }
   }
 
-  trait KeyHandler {
-    def handle: KeyEvent => Unit
-  }
-
-  new Thread(() => {
-    val cmd = Array("/home/maciek/foo/a.out")
-    val env = Array("TERM=xterm-color")
-
-    val pty = PtyProcess.exec(cmd, env)
-
-    val stdout = Source.fromInputStream(pty.getInputStream)
-    val stdin = pty.getOutputStream
-
-    def write(data: String): Unit = {
-      stdin.write(data.getBytes(StandardCharsets.UTF_8))
-      stdin.flush()
-    }
-    write("142 \r\n")
-
-    for (c <- stdout)
-      print(c)
-
-    val result = pty.waitFor
-  }).start()
 }
-

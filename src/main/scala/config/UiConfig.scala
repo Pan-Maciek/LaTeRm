@@ -1,6 +1,6 @@
 package config
 
 object UiConfig {
-  val width  = 400
-  val height = 600
+  val width  = 600
+  val height = 400
 }

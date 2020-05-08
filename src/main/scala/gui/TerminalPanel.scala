@@ -4,13 +4,14 @@ import scalafx.scene.canvas.Canvas
 import term.Terminal
 
 import scala.io.Source
+import scala.reflect.api.Constants
+import config.UiConfig
 
 class TerminalPanel extends Canvas {
-  width = 200
-  height= 200
+  width = UiConfig.width
+  height = UiConfig.height
 
   val term = new Terminal
-
   onKeyTyped = e => term.stdin.write(e.getCharacter.codePointAt(0))
 
   new Thread(() => {

@@ -11,9 +11,11 @@ import scalafx.beans.Observable
 import javafx.beans.InvalidationListener
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
+import javafx.application.Platform
 
 class TerminalPanel extends Canvas {
   val term = new Terminal
+  var text = ""
   width = UiConfig.width
   height = UiConfig.height
 
@@ -22,6 +24,9 @@ class TerminalPanel extends Canvas {
       // It's place for logic when resizing.
       graphicsContext2D.fill = Color.Black
       graphicsContext2D.fillRect(0, 0, width.get, height.get)
+
+      graphicsContext2D.fill = Color.White
+      graphicsContext2D.fillText(text, 20, 60)
     }
   }
   width.addListener(onResizeListener)
@@ -33,11 +38,12 @@ class TerminalPanel extends Canvas {
   graphicsContext2D.fillRect(0, 0, width.get, height.get)
 
   new Thread(() => {
-    var text = ""
     for (c <- Source.fromInputStream(term.stdout)) {
       text += c
-      graphicsContext2D.fill = Color.WHITE
-      graphicsContext2D.fillText(text, 20, 60)
+      Platform.runLater(() => {
+        graphicsContext2D.fill = Color.White
+        graphicsContext2D.fillText(text, 20, 60)
+      })
     }
   }).start()
 

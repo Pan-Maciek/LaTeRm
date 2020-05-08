@@ -21,7 +21,7 @@ class TerminalPanel extends Canvas {
 
   private val onResizeListener = new InvalidationListener() {
     def invalidated(observable: javafx.beans.Observable): Unit = {
-      // It's place for logic when resizing.
+      // It's a place for logic when resizing.
       graphicsContext2D.fill = Color.Black
       graphicsContext2D.fillRect(0, 0, width.get, height.get)
 

@@ -4,16 +4,12 @@ import scalafx.scene.canvas.Canvas
 import term.Terminal
 
 import scala.io.Source
-import scala.reflect.api.Constants
 import config.UiConfig
 import scalafx.scene.paint.Color
-import scalafx.beans.Observable
 import javafx.beans.InvalidationListener
-import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 
 class TerminalPanel extends Canvas {
-  val term = new Terminal
   width = UiConfig.width
   height = UiConfig.height
 
@@ -27,17 +23,44 @@ class TerminalPanel extends Canvas {
   width.addListener(onResizeListener)
   height.addListener(onResizeListener)
 
-  onKeyTyped = e => term.stdin.write(e.getCharacter.codePointAt(0))
+  val terminal = new Terminal
+  onKeyTyped = e => terminal.stdin.write(e.getCharacter.codePointAt(0))
 
   graphicsContext2D.fill = Color.Black
   graphicsContext2D.fillRect(0, 0, width.get, height.get)
 
   new Thread(() => {
-    var text = ""
-    for (c <- Source.fromInputStream(term.stdout)) {
-      text += c
-      graphicsContext2D.fill = Color.WHITE
-      graphicsContext2D.fillText(text, 20, 60)
+    sealed trait State
+    case object Default extends State
+    case object ESC extends State
+    case object CSI extends State
+
+    var state: State = Default
+    var style = Style.default
+    var x = 10
+    var y = 10
+
+    var parameter = ""
+    var intermediate = ""
+    for (c <- Source.fromInputStream(terminal.stdout)) {
+      state = (state, c) match {
+        case (_, '\u001b') => ESC
+        case (ESC, '[') => parameter = ""; intermediate = ""; CSI
+        case (CSI, c) if 0x30 <= c && c <= 0x3F => parameter += c; CSI
+        case (CSI, c) if 0x20 <= c && c <= 0x2F => intermediate += ""; CSI
+        case (CSI, 'm') =>
+          style = style.applySRG(parameter)
+          graphicsContext2D.fill =  style.foreground
+          Default
+        case (Default, '\n') =>
+          y += 10
+          x = 0
+          Default
+        case _ =>
+          graphicsContext2D.fillText(c.toString, x, y)
+          x += 10
+          Default
+      }
     }
   }).start()
 

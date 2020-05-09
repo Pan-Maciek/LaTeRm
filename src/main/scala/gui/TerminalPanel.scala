@@ -22,11 +22,8 @@ class TerminalPanel extends Canvas {
   private val onResizeListener = new InvalidationListener() {
     def invalidated(observable: javafx.beans.Observable): Unit = {
       // It's a place for logic when resizing.
-      graphicsContext2D.fill = Color.Black
-      graphicsContext2D.fillRect(0, 0, width.get, height.get)
-
-      graphicsContext2D.fill = Color.White
-      graphicsContext2D.fillText(text, 20, 60)
+      drawBackground()
+      drawText()
     }
   }
   width.addListener(onResizeListener)
@@ -34,16 +31,11 @@ class TerminalPanel extends Canvas {
 
   onKeyTyped = e => term.stdin.write(e.getCharacter.codePointAt(0))
 
-  graphicsContext2D.fill = Color.Black
-  graphicsContext2D.fillRect(0, 0, width.get, height.get)
-
+  drawBackground()
   new Thread(() => {
     for (c <- Source.fromInputStream(term.stdout)) {
       text += c
-      Platform.runLater(() => {
-        graphicsContext2D.fill = Color.White
-        graphicsContext2D.fillText(text, 20, 60)
-      })
+      Platform.runLater(() => { this.drawText })
     }
   }).start()
 
@@ -53,6 +45,16 @@ class TerminalPanel extends Canvas {
   ): Unit = {
     width.bind(widthProp)
     height.bind(heightProp)
+  }
+
+  private def drawBackground(): Unit = {
+    graphicsContext2D.fill = Color.Black
+    graphicsContext2D.fillRect(0, 0, width.get, height.get)
+  }
+
+  private def drawText(): Unit = {
+    graphicsContext2D.fill = Color.White
+    graphicsContext2D.fillText(text, 20, 60)
   }
 
 }

@@ -2,7 +2,7 @@ package term
 
 import java.io.{InputStream, OutputStream}
 import config.{SystemConstants}
-import collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import com.pty4j.PtyProcess
 

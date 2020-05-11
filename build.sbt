@@ -1,5 +1,5 @@
 scalaVersion := "2.13.1"
-name := "lterm"
+name := "laterm"
 version := "0.1"
 
 resolvers += "pty4j" at "https://jetbrains.bintray.com/pty4j"
@@ -22,3 +22,17 @@ lazy val javaFXModules =
 libraryDependencies ++= javaFXModules.map(m =>
   "org.openjfx" % s"javafx-$m" % "12.0.2" classifier osName
 )
+
+// This options ensure that building project fails when compiler issues warnings.
+scalacOptions ++= Seq(
+  "-unchecked",
+  "-deprecation",
+  "-Xfatal-warnings"
+)
+
+// It would be nice to just import all members of project!
+initialCommands in console :=
+  "import gui.data._;" ++
+    "import gui.data.Data._;" ++
+    "import gui.data.Block._;" ++
+    "import gui.Style._;"

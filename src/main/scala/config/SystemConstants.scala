@@ -2,7 +2,7 @@ package config
 
 object SystemConstants {
   import java.util._
-  import scala.collection.JavaConverters._
+  import scala.jdk.CollectionConverters._
 
   lazy val environment = System.getenv.asScala
   lazy val shell = {

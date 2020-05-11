@@ -29,17 +29,17 @@ final class Line() {
       case _  => throw new AssertionError("Trying to write beyond line's length!")
     }
 
+    insert(column, v, style)
   }
 
   private def insert(column: Int, v: Char, style: Style): Unit = {
     val i     = findBlock(len)
     val block = blocks(i)
 
-    // Todo shift all blocks to right!
-    if (block.to == column) {
-      // Check neighours for merge
-      val shiftFrom =
-        if (block.style == style) {
+    val (shiftFrom, merge) =
+      if (block.to == column) {
+        // Check neighours for merge
+        val shiftFrom = if (block.style == style) {
           // append to left
           val left = block
           blocks(i) = left.copy(to = left.to + 1)
@@ -55,11 +55,50 @@ final class Line() {
           blocks.insert(i + 1, next)
           i + 2
         }
-      shiftBlocks(shiftFrom)
-    } else {
-      // split block and then merge if possible
-      val (left, right) = block.split(column)
-      blocks(i) = left
+        (shiftFrom, false)
+      } else {
+        // split block and then merge if possible
+        val (left, right) = block.split(column)
+        val middle        = Block(column, v, style)
+        val iterable      = List(middle, right)
+
+        blocks(i) = left
+        blocks.insertAll(i + 1, iterable)
+        (i + 2, true)
+      }
+
+    // clean up
+    shiftBlocks(shiftFrom)
+    if (merge)
+      mergeAt(shiftFrom - 1)
+  }
+
+  /** Merges starting with block at `i` */
+  def mergeAt(i: Int): Unit = {
+    var block  = blocks(i)
+    var blockI = i
+
+    // merge left
+    var leftI = blockI - 1
+    while (leftI >= 0 && blocks(leftI).style == block.style) {
+      val left = blocks(leftI)
+      block = block.merge(left)
+
+      blocks.remove(leftI)
+      blockI -= 1
+      leftI -= 1
+
+      blocks(blockI) = block
+    }
+
+    // merge right
+    var rightI = blockI + 1
+    while (rightI < blocks.length && blocks(rightI).style == block.style) {
+      val right = blocks(leftI)
+      block = block.merge(right)
+
+      blocks.remove(rightI)
+      blocks(blockI) = block
     }
   }
 
@@ -67,29 +106,6 @@ final class Line() {
     for (i     <- from until blocks.length;
          block = blocks(i))
       blocks(i) = block.shiftRight(1)
-  }
-
-  // appending at the end
-  private def append(v: Char, style: Style): Unit = {
-    val i     = findBlock(len)
-    val block = blocks(i)
-
-    if (block.style == style) {
-      blocks(i) = block.copy(to = block.to + 1)
-    } else {
-      val newBlock = Block(block.to, style)
-      blocks += newBlock
-    }
-  }
-
-  private def appendBlock(v: Char, style: Style, prevI: Int) = {
-    if (block.style == style) {
-      blocks(i) = block.copy(to = block.to + 1)
-    } else {
-      val newBlock = Block(block.to, style)
-      blocks += newBlock
-    }
-
   }
 
   def findBlock(column: Int): Int = {
@@ -105,10 +121,10 @@ final class Line() {
 object Block {
   implicit def ordering[A <: Block]: Ordering[Block] = Ordering.by(_.to)
 
-  // singleton block holding one character
+  /** singleton block holding one character */
   def apply(where: Int, style: Style): Block = Block(where, where + 1, style)
 
-  // should be used only when creating new line!
+  /** should be used only when creating new line! */
   val empty: Block = Block(0, 0, Style.default)
 }
 
@@ -122,7 +138,21 @@ final case class Block(from: Int, to: Int, style: Style) {
     this.copy(shiftedFrom, shiftedTo)
   }
 
-  // Block(from, to) => Block(from, where) | Block(where, to)
+  /** Note that blocks should be consecutive (order does not matter)
+    * and have the same style.
+    */
+  def merge(other: Block): Block = {
+    // Assert that they're consecutive and have the same style
+    assert(this.style == other.style)
+    assert(this.to == other.from || this.from == other.to)
+
+    val mergedFrom = Math.min(this.from, other.from)
+    val mergedTo   = Math.max(this.to, other.to)
+
+    Block(mergedFrom, mergedTo, this.style)
+  }
+
+  /** Block(from, to) => Block(from, where) | Block(where, to) */
   def split(where: Int): (Block, Block) = {
     assert(where > from)
     assert(where < to)

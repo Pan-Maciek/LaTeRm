@@ -1,12 +1,15 @@
 import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
+import scalafx.scene.paint.Color
+import org.scalatestplus.scalacheck.Checkers
 import gui._
 import gui.data._
 import gui.Style
 import gui.data.Block._
-import scalafx.scene.paint.Color
+import org.scalacheck.Gen
+import org.scalacheck.Arbitrary
 
-class LineSpec extends AnyFlatSpec {
+class LineSpec extends AnyFlatSpec with Checkers {
   val default = Style.default
 
   "write" should "work correctly for one character" in {
@@ -200,5 +203,19 @@ class LineSpec extends AnyFlatSpec {
     line.delete(0)
     assert(line.len() == 0)
     assert(line.blocksSize() == 1)
+  }
+
+  implicit val lineGen: Gen[Line]             = Gen.const(new Line)
+  implicit val arbitraryLine: Arbitrary[Line] = Arbitrary({ lineGen })
+
+  "invaiant" should "hold: for n insertions line's length is increased by n" in {
+    check((line: Line, seq: String) => {
+      val prevLen = line.len
+      for (c <- seq) {
+        line.insert(0, c, Style.default)
+      }
+
+      line.len == seq.size + prevLen
+    })
   }
 }

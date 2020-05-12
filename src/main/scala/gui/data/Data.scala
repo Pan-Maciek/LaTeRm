@@ -14,8 +14,10 @@ final case class Line() {
   private val sb     = new StringBuilder
   private val blocks = mutable.ArrayBuffer(Block.empty)
 
-  def getText(): String = sb.toString()
-  def len(): Int        = sb.size
+  def getText(): String   = sb.toString()
+  def charAt(column: Int) = sb.charAt(column)
+  def len(): Int          = sb.size
+  def blocksSize(): Int   = blocks.size
 
   /** Replaces character at given column.
     * If column exceeds len, then it appends spaces (with default style) until specified column is reached,
@@ -25,12 +27,13 @@ final case class Line() {
 
     if (column >= len) {
       // in case line is shorter append
-      val missing = len - column
+      val missing = column - len
 
       blocks.append(Block(len, column, Style.default))
       sb.append(" " * missing)
 
       blocks.append(Block(len(), style))
+      sb.append(v)
       mergeAt(blocks.length - 1)
     } else {
       // simply replace
@@ -38,18 +41,19 @@ final case class Line() {
       sb.replace(column, column + 1, String.valueOf(v))
       val block = blocks(blockI)
 
-      // split if necessary
+      // split if necessary - todo
       if (block.style != style) {
-        val (left, right) = block.split(column)
-        val middle        = Block(column, v, style)
-        val iterable      = List(middle, right)
+        val (left, middle, right) = block.split(column, style)
+        val iterable              = List(middle, right)
 
         blocks(blockI) = left
         blocks.insertAll(blockI + 1, iterable)
+        mergeAt(blockI + 1)
       } else {
         // try to merge
         mergeAt(blockI)
       }
+
     }
 
   }
@@ -88,9 +92,8 @@ final case class Line() {
         (shiftFrom, false)
       } else {
         // split block and then merge if possible
-        val (left, right) = block.split(column)
-        val middle        = Block(column, v, style)
-        val iterable      = List(middle, right)
+        val (left, middle, right) = block.split(column, style)
+        val iterable              = List(middle, right)
 
         blocks(i) = left
         blocks.insertAll(i + 1, iterable)
@@ -124,8 +127,8 @@ final case class Line() {
 
     // merge right
     var rightI = blockI + 1
-    while (rightI < blocks.length && (blocks(rightI).style == block.style || blocks(leftI).len == 0)) {
-      val right = blocks(leftI)
+    while (rightI < blocks.length && (blocks(rightI).style == block.style || blocks(rightI).len == 0)) {
+      val right = blocks(rightI)
       if (right.len != 0)
         block = block.merge(right)
 
@@ -143,14 +146,26 @@ final case class Line() {
   def findBlock(column: Int): Int = {
     assert(column <= len())
 
-    blocks.search(Block(column, column, Style.default)) match {
+    blocks.search(Block(column, column + 1, Style.default)) match {
       case Found(i)          => i
       case InsertionPoint(i) => i
     }
   }
+
+  override def toString(): String = {
+    val ssb = new StringBuilder
+    ssb.append(f"{Line: \t${sb.toString}")
+    for (block <- blocks)
+      ssb.append(f"\n\t${block.toString}")
+
+    ssb.append(f"}")
+    ssb.toString
+  }
 }
 
 object Block {
+
+  /** used by binsearch */
   implicit def ordering[A <: Block]: Ordering[Block] = Ordering.by(_.to)
 
   /** singleton block holding one character */
@@ -184,13 +199,20 @@ final case class Block(from: Int, to: Int, style: Style) {
     Block(mergedFrom, mergedTo, this.style)
   }
 
-  /** Block(from, to) => Block(from, where) | Block(where, to),
-    * Note that this might result in empty block, but it should be collected by merge
+  /** Block(from, to) => Block(from, where) | Block(where, where + 1) | Block(where + 1, to),
+    * Note that this might result in empty blocks, but they should be collected by merge
     */
-  def split(where: Int): (Block, Block) = {
-    val left  = this.copy(from, where)
-    val right = this.copy(where, to)
+  def split(where: Int, style: Style): (Block, Block, Block) = {
+    assert(where >= from)
+    assert(where < to)
+    val left   = this.copy(from, where)
+    val middle = Block(where, style)
+    val right  = this.copy(where + 1, to)
 
-    (left, right)
+    (left, middle, right)
+  }
+
+  override def toString(): String = {
+    f"Block{[$from,$to] - #${style.hashCode}}"
   }
 }

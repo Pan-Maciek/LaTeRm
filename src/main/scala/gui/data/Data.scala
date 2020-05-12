@@ -7,13 +7,9 @@ import scala.collection.Searching._
 import scala.collection.Searching
 import scala.math.signum
 
-trait Functionality {
-  def write(row: Int, column: Int, v: Char, style: Style): Unit
-}
-
 final case class Data() {}
 
-final class Line() {
+final case class Line() {
   import Block._
   private val sb     = new StringBuilder
   private val blocks = mutable.ArrayBuffer(Block.empty)
@@ -21,7 +17,45 @@ final class Line() {
   def getText(): String = sb.toString()
   def len(): Int        = sb.size
 
+  /** Replaces character at given column.
+    * If column exceeds len, then it appends spaces (with default style) until specified column is reached,
+    * at which point it inserts given character. */
   def write(column: Int, v: Char, style: Style): Unit = {
+    assert(column >= 0)
+
+    if (column >= len) {
+      // in case line is shorter append
+      val missing = len - column
+
+      blocks.append(Block(len, column, Style.default))
+      sb.append(" " * missing)
+
+      blocks.append(Block(len(), style))
+      mergeAt(blocks.length - 1)
+    } else {
+      // simply replace
+      val blockI = findBlock(column)
+      sb.replace(column, column + 1, String.valueOf(v))
+      val block = blocks(blockI)
+
+      // split if necessary
+      if (block.style != style) {
+        val (left, right) = block.split(column)
+        val middle        = Block(column, v, style)
+        val iterable      = List(middle, right)
+
+        blocks(blockI) = left
+        blocks.insertAll(blockI + 1, iterable)
+      } else {
+        // try to merge
+        mergeAt(blockI)
+      }
+    }
+
+  }
+
+  /** Legacy code - inserts character into specified position. */
+  def insert(column: Int, v: Char, style: Style): Unit = {
     assert(column >= 0)
     signum(column compare len) match {
       case 0  => sb += v
@@ -29,10 +63,6 @@ final class Line() {
       case _  => throw new AssertionError("Trying to write beyond line's length!")
     }
 
-    insert(column, v, style)
-  }
-
-  private def insert(column: Int, v: Char, style: Style): Unit = {
     val i     = findBlock(len)
     val block = blocks(i)
 
@@ -73,16 +103,17 @@ final class Line() {
       mergeAt(shiftFrom - 1)
   }
 
-  /** Merges starting with block at `i` */
+  /** Merges starting with block at `i`, note that this should also remove empty blocks.*/
   def mergeAt(i: Int): Unit = {
     var block  = blocks(i)
     var blockI = i
 
     // merge left
     var leftI = blockI - 1
-    while (leftI >= 0 && blocks(leftI).style == block.style) {
+    while (leftI >= 0 && (blocks(leftI).style == block.style || blocks(leftI).len == 0)) {
       val left = blocks(leftI)
-      block = block.merge(left)
+      if (left.len != 0)
+        block = block.merge(left)
 
       blocks.remove(leftI)
       blockI -= 1
@@ -93,9 +124,10 @@ final class Line() {
 
     // merge right
     var rightI = blockI + 1
-    while (rightI < blocks.length && blocks(rightI).style == block.style) {
+    while (rightI < blocks.length && (blocks(rightI).style == block.style || blocks(leftI).len == 0)) {
       val right = blocks(leftI)
-      block = block.merge(right)
+      if (right.len != 0)
+        block = block.merge(right)
 
       blocks.remove(rightI)
       blocks(blockI) = block
@@ -152,11 +184,10 @@ final case class Block(from: Int, to: Int, style: Style) {
     Block(mergedFrom, mergedTo, this.style)
   }
 
-  /** Block(from, to) => Block(from, where) | Block(where, to) */
+  /** Block(from, to) => Block(from, where) | Block(where, to),
+    * Note that this might result in empty block, but it should be collected by merge
+    */
   def split(where: Int): (Block, Block) = {
-    assert(where > from)
-    assert(where < to)
-
     val left  = this.copy(from, where)
     val right = this.copy(where, to)
 

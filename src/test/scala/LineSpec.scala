@@ -9,7 +9,7 @@ import scalafx.scene.paint.Color
 class LineSpec extends AnyFlatSpec {
   val default = Style.default
 
-  "Write " should "work correctly for one character" in {
+  "write" should "work correctly for one character" in {
     val line = new Line()
     line.write(0, 'a', default)
 
@@ -103,7 +103,7 @@ class LineSpec extends AnyFlatSpec {
     assert(line.blocksSize() == 1)
   }
 
-  "Insert" should "work correctly for one character" in {
+  "insert" should "work correctly for one character" in {
     val line = new Line()
     line.insert(0, 'a', default)
     line.insert(0, 'a', default)
@@ -159,5 +159,46 @@ class LineSpec extends AnyFlatSpec {
 
     line.write(3, 'c', style)
     assert(line.blocksSize() == 4)
+  }
+
+  "delete" should "handle sequence of removes, merge blocks" in {
+    val line  = new Line()
+    val style = Style(Color.Blue, Color.Red, false)
+
+    line.insert(0, 'a', style)
+    line.insert(1, 'b', default)
+    line.insert(2, 'c', style)
+    line.insert(3, 'd', default)
+
+    line.delete(0)
+    assert(line.len() == 3)
+    assert(line.blocksSize() == 3)
+
+    line.delete(1)
+    assert(line.len() == 2)
+    assert(line.blocksSize() == 1)
+  }
+
+  it should "handle removing all characters" in {
+    val line  = new Line()
+    val style = Style(Color.Blue, Color.Red, false)
+
+    line.insert(0, 'a', style)
+    line.insert(1, 'b', default)
+    line.insert(2, 'c', style)
+    line.insert(3, 'd', default)
+
+    line.delete(0)
+    assert(line.len() == 3)
+    assert(line.blocksSize() == 3)
+
+    line.delete(1)
+    assert(line.len() == 2)
+    assert(line.blocksSize() == 1)
+
+    line.delete(1)
+    line.delete(0)
+    assert(line.len() == 0)
+    assert(line.blocksSize() == 1)
   }
 }

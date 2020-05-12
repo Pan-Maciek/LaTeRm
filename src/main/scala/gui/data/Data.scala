@@ -11,6 +11,7 @@ final case class Data() {}
 
 final case class Line() {
   import Block._
+
   private val sb     = new StringBuilder
   private val blocks = mutable.ArrayBuffer(Block.empty)
 
@@ -24,35 +25,37 @@ final case class Line() {
     * at which point it inserts given character. */
   def write(column: Int, v: Char, style: Style): Unit = {
     assert(column >= 0)
+    val mergeI =
+      if (column >= len) {
+        // in case line is shorter append
+        val missing = column - len
 
-    if (column >= len) {
-      // in case line is shorter append
-      val missing = column - len
+        blocks.append(Block(len, column, Style.default))
+        sb.append(" " * missing)
 
-      blocks.append(Block(len, column, Style.default))
-      sb.append(" " * missing)
-
-      blocks.append(Block(len(), style))
-      sb.append(v)
-      mergeAt(blocks.length - 1)
-    } else {
-      // simply replace
-      val blockI = findBlock(column)
-      sb.replace(column, column + 1, String.valueOf(v))
-      val block = blocks(blockI)
-
-      // split if necessary
-      if (block.style != style) {
-        val (left, middle, right) = block.split(column, style)
-        val iterable              = List(middle, right)
-
-        blocks(blockI) = left
-        blocks.insertAll(blockI + 1, iterable)
-        mergeAt(blockI + 1)
+        blocks.append(Block(len(), style))
+        sb.append(v)
+        blocks.length - 1
       } else {
-        mergeAt(blockI)
+        // simply replace
+        val blockI = findBlock(column)
+        sb.replace(column, column + 1, String.valueOf(v))
+        val block = blocks(blockI)
+
+        // split if necessary
+        if (block.style != style) {
+          val (left, middle, right) = block.split(column, style)
+          val iterable              = List(middle, right)
+
+          blocks(blockI) = left
+          blocks.insertAll(blockI + 1, iterable)
+          blockI + 1
+        } else {
+          blockI
+        }
       }
-    }
+
+    mergeAt(mergeI)
   }
 
   /** Legacy code - inserts character into specified position. */
@@ -85,7 +88,7 @@ final case class Line() {
           }
           (shiftFrom, false)
         } else {
-          // split block and then merge if possible
+          // split block
           val (left, middle, unshiftedRight) = block.split(column, style)
           val right                          = unshiftedRight.copy(to = unshiftedRight.to + 1)
           val iterable                       = List(middle, right)
@@ -105,8 +108,30 @@ final case class Line() {
     }
   }
 
+  def delete(column: Int): Unit = {
+    assert(column >= 0)
+    assert(column < len())
+
+    sb.deleteCharAt(column)
+    val blockI = findBlock(column)
+    val block  = blocks(blockI)
+
+    if (block.len == 1) {
+      blocks.remove(blockI)
+      if (blocksSize() == 0) {
+        blocks.append(empty)
+      } else {
+        shiftBlocks(blockI, -1)
+        mergeAt(blockI)
+      }
+    } else {
+      blocks(blockI) = block.copy(to = block.to - 1)
+      shiftBlocks(blockI + 1, -1)
+    }
+  }
+
   /** Merges starting with block at `i`, note that this should also remove empty blocks.*/
-  def mergeAt(i: Int): Unit = {
+  private def mergeAt(i: Int): Unit = {
     var block  = blocks(i)
     var blockI = i
 
@@ -136,13 +161,13 @@ final case class Line() {
     }
   }
 
-  private def shiftBlocks(from: Int): Unit = {
+  private def shiftBlocks(from: Int, by: Int = 1): Unit = {
     for (i     <- from until blocks.length;
          block = blocks(i))
-      blocks(i) = block.shiftRight(1)
+      blocks(i) = block.shiftRight(by)
   }
 
-  def findBlock(column: Int): Int = {
+  private def findBlock(column: Int): Int = {
     assert(column <= len())
 
     blocks.search(Block(column, column + 1, Style.default)) match {

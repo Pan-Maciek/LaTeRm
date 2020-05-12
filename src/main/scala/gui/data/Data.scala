@@ -64,7 +64,7 @@ final case class Line() {
       val block = blocks(i)
       sb.insert(column, String.valueOf(v))
 
-      val (shiftFrom, merge) =
+      val (j, merge) =
         if (block.to == column) {
           // Check neighours for merge
           val shiftFrom = if (block.style == style) {
@@ -96,9 +96,12 @@ final case class Line() {
         }
 
       // clean up
-      shiftBlocks(shiftFrom + 1)
+      val shiftFrom = j + 1
+      val mergeI    = j - 1
+
+      shiftBlocks(shiftFrom)
       if (merge)
-        mergeAt(shiftFrom - 1)
+        mergeAt(mergeI)
     }
   }
 

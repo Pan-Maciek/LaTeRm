@@ -41,7 +41,7 @@ final case class Line() {
       sb.replace(column, column + 1, String.valueOf(v))
       val block = blocks(blockI)
 
-      // split if necessary - todo
+      // split if necessary
       if (block.style != style) {
         val (left, middle, right) = block.split(column, style)
         val iterable              = List(middle, right)
@@ -50,60 +50,56 @@ final case class Line() {
         blocks.insertAll(blockI + 1, iterable)
         mergeAt(blockI + 1)
       } else {
-        // try to merge
         mergeAt(blockI)
       }
-
     }
-
   }
 
   /** Legacy code - inserts character into specified position. */
   def insert(column: Int, v: Char, style: Style): Unit = {
-    assert(column >= 0)
-    signum(column compare len) match {
-      case 0  => sb += v
-      case -1 => sb.insert(column, v)
-      case _  => throw new AssertionError("Trying to write beyond line's length!")
-    }
+    if (column >= len) {
+      write(column, v, style)
+    } else {
+      val i     = findBlock(column)
+      val block = blocks(i)
+      sb.insert(column, String.valueOf(v))
 
-    val i     = findBlock(len)
-    val block = blocks(i)
-
-    val (shiftFrom, merge) =
-      if (block.to == column) {
-        // Check neighours for merge
-        val shiftFrom = if (block.style == style) {
-          // append to left
-          val left = block
-          blocks(i) = left.copy(to = left.to + 1)
-          i + 1
-        } else if (i < blocks.size - 1 && blocks(i + 1).style == style) {
-          // prepend to right
-          val right = blocks(i + 1)
-          blocks(i + 1) = right.copy(to = right.to + 1)
-          i + 2
+      val (shiftFrom, merge) =
+        if (block.to == column) {
+          // Check neighours for merge
+          val shiftFrom = if (block.style == style) {
+            // append to left
+            val left = block
+            blocks(i) = left.copy(to = left.to + 1)
+            i + 1
+          } else if (i < blocks.size - 1 && blocks(i + 1).style == style) {
+            // prepend to right
+            val right = blocks(i + 1)
+            blocks(i + 1) = right.copy(to = right.to + 1)
+            i + 2
+          } else {
+            // create new block
+            val next = Block(column, style)
+            blocks.insert(i + 1, next)
+            i + 2
+          }
+          (shiftFrom, false)
         } else {
-          // create new block
-          val next = Block(column, style)
-          blocks.insert(i + 1, next)
-          i + 2
+          // split block and then merge if possible
+          val (left, middle, unshiftedRight) = block.split(column, style)
+          val right                          = unshiftedRight.copy(to = unshiftedRight.to + 1)
+          val iterable                       = List(middle, right)
+
+          blocks(i) = left
+          blocks.insertAll(i + 1, iterable)
+          (i + 2, true)
         }
-        (shiftFrom, false)
-      } else {
-        // split block and then merge if possible
-        val (left, middle, right) = block.split(column, style)
-        val iterable              = List(middle, right)
 
-        blocks(i) = left
-        blocks.insertAll(i + 1, iterable)
-        (i + 2, true)
-      }
-
-    // clean up
-    shiftBlocks(shiftFrom)
-    if (merge)
-      mergeAt(shiftFrom - 1)
+      // clean up
+      shiftBlocks(shiftFrom + 1)
+      if (merge)
+        mergeAt(shiftFrom - 1)
+    }
   }
 
   /** Merges starting with block at `i`, note that this should also remove empty blocks.*/

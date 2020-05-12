@@ -97,10 +97,67 @@ class LineSpec extends AnyFlatSpec {
 
     line.write(0, 'a', default)
     assert(line.blocksSize() == 2)
-    println(line)
 
     line.write(0, 'a', style)
     line.write(1, 'a', style)
     assert(line.blocksSize() == 1)
+  }
+
+  "Insert" should "work correctly for one character" in {
+    val line = new Line()
+    line.insert(0, 'a', default)
+    line.insert(0, 'a', default)
+    line.insert(0, 'a', default)
+
+    assert(line.charAt(0) == 'a')
+    assert(line.len() == 3)
+  }
+
+  it should "work correctly for multiple characters" in {
+    val line = new Line()
+    line.insert(0, 'a', default)
+    line.insert(1, 'a', default)
+    line.insert(0, 'x', Style(Color.Red, Color.Blue, false))
+
+    assert(line.charAt(0) == 'x')
+    assert(line.len() == 3)
+    assert(line.blocksSize() == 2)
+  }
+
+  it should "correctly split when inserting different style" in {
+    val line = new Line()
+
+    line.insert(0, 'a', default)
+    line.insert(1, 'b', default)
+    line.insert(2, 'c', default)
+    line.insert(1, 'd', Style(Color.Blue, Color.Red, false))
+
+    assert(line.blocksSize() == 3)
+    assert(line.len() == 4)
+  }
+
+  it should "handle sequence of insertions with alternating styles" in {
+    val line  = new Line()
+    val style = Style(Color.Blue, Color.Red, false)
+
+    line.insert(0, 'a', style)
+    line.insert(1, 'b', default)
+    line.insert(2, 'c', style)
+    line.insert(3, 'd', default)
+    assert(line.blocksSize() == 4)
+
+    line.insert(1, 'a', style)
+    assert(line.blocksSize() == 4)
+
+    line.insert(3, 'x', style)
+    assert(line.blocksSize() == 4)
+
+    line.insert(5, 'c', default)
+
+    line.insert(1, 'c', default)
+    assert(line.blocksSize() == 6)
+
+    line.write(3, 'c', style)
+    assert(line.blocksSize() == 4)
   }
 }

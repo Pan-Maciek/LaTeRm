@@ -10,6 +10,7 @@ import org.scalacheck.Arbitrary
 
 class TerminalLineSpec extends AnyFlatSpec with Checkers {
   val default = Style.default
+  val style   = Style(Color.Blue, Color.Red, false)
 
   "write" should "work correctly for one character" in {
     val line = new TerminalLine()
@@ -63,8 +64,7 @@ class TerminalLineSpec extends AnyFlatSpec with Checkers {
   }
 
   it should " correctly split " in {
-    val line  = new TerminalLine()
-    val style = Style(Color.Blue, Color.Red, false)
+    val line = new TerminalLine()
 
     line.write(0, 'a', style)
     line.write(1, 'b', default)
@@ -76,8 +76,7 @@ class TerminalLineSpec extends AnyFlatSpec with Checkers {
   }
 
   it should "handle sequence of writes with alternating styles" in {
-    val line  = new TerminalLine()
-    val style = Style(Color.Blue, Color.Red, false)
+    val line = new TerminalLine()
 
     line.write(0, 'a', style)
     line.write(1, 'b', default)
@@ -139,8 +138,7 @@ class TerminalLineSpec extends AnyFlatSpec with Checkers {
   }
 
   it should "handle sequence of insertions with alternating styles" in {
-    val line  = new TerminalLine()
-    val style = Style(Color.Blue, Color.Red, false)
+    val line = new TerminalLine()
 
     line.insert(0, 'a', style)
     line.insert(1, 'b', default)
@@ -163,9 +161,8 @@ class TerminalLineSpec extends AnyFlatSpec with Checkers {
     assert(line.blocksSize() == 4)
   }
 
-  "delete" should "handle sequence of removes, merge blocks" in {
-    val line  = new TerminalLine()
-    val style = Style(Color.Blue, Color.Red, false)
+  "deleteAt" should "handle sequence of removes, merge blocks" in {
+    val line = new TerminalLine()
 
     line.insert(0, 'a', style)
     line.insert(1, 'b', default)
@@ -182,8 +179,7 @@ class TerminalLineSpec extends AnyFlatSpec with Checkers {
   }
 
   it should "handle removing all characters" in {
-    val line  = new TerminalLine()
-    val style = Style(Color.Blue, Color.Red, false)
+    val line = new TerminalLine()
 
     line.insert(0, 'a', style)
     line.insert(1, 'b', default)
@@ -200,6 +196,47 @@ class TerminalLineSpec extends AnyFlatSpec with Checkers {
 
     line.deleteAt(1)
     line.deleteAt(0)
+    assert(line.len() == 0)
+    assert(line.blocksSize() == 1)
+  }
+
+  "deleteFrom" should "work..." in {
+    val line = new TerminalLine()
+
+    line.insert(0, 'a', style)
+    line.insert(1, 'b', style)
+    line.insert(2, 'c', style)
+    line.insert(3, 'd', default)
+    assert(line.blocksSize() == 2)
+
+    line.deleteFrom(1)
+    assert(line.len() == 1)
+    assert(line.blocksSize() == 1)
+
+    line.deleteFrom(0)
+    assert(line.len() == 0)
+    assert(line.blocksSize() == 1)
+
+    line.write(0, 'x', style)
+    line.deleteFrom(0)
+    assert(line.len() == 0)
+    assert(line.blocksSize() == 1)
+  }
+
+  "deleteTo" should "work..." in {
+    val line = new TerminalLine()
+
+    line.insert(0, 'a', style)
+    line.insert(1, 'b', default)
+    line.insert(2, 'c', style)
+    line.insert(3, 'd', default)
+
+    line.deleteTo(1)
+    assert(line.len() == 3)
+    assert(line.blocksSize() == 3)
+
+    println(line)
+    line.deleteTo(line.len())
     assert(line.len() == 0)
     assert(line.blocksSize() == 1)
   }

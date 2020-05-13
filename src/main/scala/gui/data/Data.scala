@@ -147,29 +147,32 @@ final case class TerminalLine() extends Drawable {
 
   /** Deletes characters up to specified column (exclusive) */
   def deleteTo(column: Int): Unit = {
-    sb.delete(0, column)
     val blockI = findBlock(column)
+    sb.delete(0, column)
 
-    blocks.dropInPlace(blockI)
     val block = blocks(blockI)
+    blocks.dropInPlace(blockI)
     val shiftFrom =
       if (block.to == column) {
         blocks.dropInPlace(1); 0
       } else {
         val to       = block.to - column
         val adjusted = block.copy(from = 0, to = to)
-        blocks(blockI) = adjusted; 1
+        blocks(0) = adjusted; 1
       }
 
     val shiftBy = -column
     shiftBlocks(shiftFrom, -column)
+
+    if (blocksSize() == 0)
+      blocks.append(Block.empty)
   }
 
   /** Deletes characters from (inclusive) till the end (len()) */
   def deleteFrom(column: Int): Unit = {
-    sb.delete(column, len)
     val blockI   = findBlock(column)
     val deleteNo = blocksSize() - blockI - 1
+    sb.delete(column, len)
 
     blocks.dropRightInPlace(deleteNo)
     val block    = blocks(blockI)
@@ -179,7 +182,7 @@ final case class TerminalLine() extends Drawable {
       if (blocksSize() == 1) {
         blocks(0) = Block.empty
       } else {
-        blocks.drop(1)
+        blocks.dropRightInPlace(1)
       }
     } else
       blocks(blockI) = adjusted
@@ -229,8 +232,9 @@ final case class TerminalLine() extends Drawable {
     assert(column <= len())
 
     blocks.search(Block(column, column + 1, Style.default)) match {
-      case Found(i)          => i
-      case InsertionPoint(i) => i
+      case Found(i)                               => i
+      case InsertionPoint(i) if i >= blocksSize() => blocksSize() - 1
+      case InsertionPoint(i)                      => i
     }
   }
 

@@ -15,10 +15,11 @@ final case class Line() {
   private val sb     = new StringBuilder
   private val blocks = mutable.ArrayBuffer(Block.empty)
 
-  def getText(): String   = sb.toString()
-  def charAt(column: Int) = sb.charAt(column)
-  def len(): Int          = sb.size
-  def blocksSize(): Int   = blocks.size
+  def getText(): String       = sb.toString()
+  def charAt(column: Int)     = sb.charAt(column)
+  def len(): Int              = sb.size
+  def blocksSize(): Int       = blocks.size
+  def blocksSeq(): Seq[Block] = blocks.toSeq
 
   /** Replaces character at given column.
     * If column exceeds len, then it appends spaces (with default style) until specified column is reached,

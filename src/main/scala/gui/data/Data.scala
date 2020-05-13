@@ -1,22 +1,29 @@
 package gui.data
 
 import gui.Style
-import gui.Style._
+import javafx.geometry.Bounds
+import scalafx.scene.canvas.GraphicsContext
+import scalafx.scene.text.{Font, Text}
+
+import Ordering.Double.TotalOrdering
 import scala.collection.mutable
 import scala.collection.Searching._
-import scala.collection.Searching
-import scala.math.signum
 
 final case class Data() {}
 
-final case class Line() {
-  import Block._
+trait Drawable {
+  def draw(graphicsContext: GraphicsContext): Unit
+  def width: Double
+  def height: Double
+}
+
+final case class TerminalLine() extends Drawable {
 
   private val sb     = new StringBuilder
   private val blocks = mutable.ArrayBuffer(Block.empty)
 
-  def getText(): String   = sb.toString()
-  def charAt(column: Int) = sb.charAt(column)
+  def getText: String     = sb.toString()
+  def charAt(column: Int): Char = sb.charAt(column)
   def len(): Int          = sb.size
   def blocksSize(): Int   = blocks.size
 
@@ -30,7 +37,7 @@ final case class Line() {
         // in case line is shorter append
         val missing = column - len
 
-        blocks.append(Block(len, column, Style.default))
+        blocks.append(Block(len(), column, Style.default))
         sb.append(" " * missing)
 
         blocks.append(Block(len(), style))
@@ -119,7 +126,7 @@ final case class Line() {
     if (block.len == 1) {
       blocks.remove(blockI)
       if (blocksSize() == 0) {
-        blocks.append(empty)
+        blocks.append(Block.empty)
       } else {
         shiftBlocks(blockI, -1)
         mergeAt(blockI)
@@ -162,7 +169,7 @@ final case class Line() {
   }
 
   private def shiftBlocks(from: Int, by: Int = 1): Unit = {
-    for (i     <- from until blocks.length;
+    for (i <- from until blocks.length;
          block = blocks(i))
       blocks(i) = block.shiftRight(by)
   }
@@ -176,7 +183,7 @@ final case class Line() {
     }
   }
 
-  override def toString(): String = {
+  override def toString: String = {
     val ssb = new StringBuilder
     ssb.append(f"{Line: \t${sb.toString}")
     for (block <- blocks)
@@ -185,58 +192,93 @@ final case class Line() {
     ssb.append(f"}")
     ssb.toString
   }
+
+  override def width: Double = blocks.foldLeft(0.0)(_ + _.width)
+  override def height: Double = blocks.map(_.height).max
+
+  def draw(graphicsContext2D: GraphicsContext): Unit = {
+    if (sb.nonEmpty) {
+      graphicsContext2D.save()
+      for (block <- blocks) {
+        if (block.len > 0) {
+          block.draw(graphicsContext2D)
+          graphicsContext2D.translate(block.width, 0)
+        }
+      }
+      graphicsContext2D.restore()
+    }
+  }
+
+  object Block {
+    /** used by bin search */
+    implicit def ordering[A <: Block]: Ordering[Block] = Ordering.by(_.to)
+
+    /** singleton block holding one character */
+    def apply(where: Int, style: Style): Block = Block(where, where + 1, style)
+
+    /** should be used only when creating new line! */
+    val empty: Block = Block(0, 0, Style.default)
+  }
+
+  case class Block(from: Int, to: Int, style: Style) extends Drawable {
+    def len(): Int = to - from
+
+    def shiftRight(by: Int = 1): Block = {
+      val shiftedFrom = this.from + by
+      val shiftedTo   = this.to + by
+
+      this.copy(shiftedFrom, shiftedTo)
+    }
+
+    /** Note that blocks should be consecutive (order does not matter)
+      * and have the same style.
+      */
+    def merge(other: Block): Block = {
+      // Assert that they're consecutive and have the same style
+      assert(this.style == other.style)
+      assert(this.to == other.from || this.from == other.to)
+
+      val mergedFrom = Math.min(this.from, other.from)
+      val mergedTo   = Math.max(this.to, other.to)
+
+      Block(mergedFrom, mergedTo, this.style)
+    }
+
+    /** Block(from, to) => Block(from, where) | Block(where, where + 1) | Block(where + 1, to),
+      * Note that this might result in empty blocks, but they should be collected by merge
+      */
+    def split(where: Int, style: Style): (Block, Block, Block) = {
+      assert(where >= from)
+      assert(where < to)
+      val left   = this.copy(from, where)
+      val middle = Block(where, style)
+      val right  = this.copy(where + 1, to)
+
+      (left, middle, right)
+    }
+
+    override def toString: String = f"Block{[$from,$to] - #${style.hashCode}}"
+
+    private lazy val bounds: Bounds = {
+      val textObject = new Text(text)
+      textObject.setFont(Font.default)
+      textObject.getBoundsInLocal
+    }
+
+    def width: Double = bounds.getWidth
+    def height: Double = bounds.getHeight
+
+    def text: String = sb.substring(from, to)
+
+    override def draw(graphicsContext: GraphicsContext): Unit = {
+      graphicsContext.font = Font.default
+      graphicsContext.fill = style.background
+      graphicsContext.fillRect(0, 0, width, height)
+
+      graphicsContext.fill = style.foreground
+      graphicsContext.fillText(text, 0, 0)
+    }
+  }
 }
 
-object Block {
 
-  /** used by binsearch */
-  implicit def ordering[A <: Block]: Ordering[Block] = Ordering.by(_.to)
-
-  /** singleton block holding one character */
-  def apply(where: Int, style: Style): Block = Block(where, where + 1, style)
-
-  /** should be used only when creating new line! */
-  val empty: Block = Block(0, 0, Style.default)
-}
-
-final case class Block(from: Int, to: Int, style: Style) {
-  def len(): Int = to - from
-
-  def shiftRight(by: Int = 1): Block = {
-    val shiftedFrom = this.from + by
-    val shiftedTo   = this.to + by
-
-    this.copy(shiftedFrom, shiftedTo)
-  }
-
-  /** Note that blocks should be consecutive (order does not matter)
-    * and have the same style.
-    */
-  def merge(other: Block): Block = {
-    // Assert that they're consecutive and have the same style
-    assert(this.style == other.style)
-    assert(this.to == other.from || this.from == other.to)
-
-    val mergedFrom = Math.min(this.from, other.from)
-    val mergedTo   = Math.max(this.to, other.to)
-
-    Block(mergedFrom, mergedTo, this.style)
-  }
-
-  /** Block(from, to) => Block(from, where) | Block(where, where + 1) | Block(where + 1, to),
-    * Note that this might result in empty blocks, but they should be collected by merge
-    */
-  def split(where: Int, style: Style): (Block, Block, Block) = {
-    assert(where >= from)
-    assert(where < to)
-    val left   = this.copy(from, where)
-    val middle = Block(where, style)
-    val right  = this.copy(where + 1, to)
-
-    (left, middle, right)
-  }
-
-  override def toString(): String = {
-    f"Block{[$from,$to] - #${style.hashCode}}"
-  }
-}

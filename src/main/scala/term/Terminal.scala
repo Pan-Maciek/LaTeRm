@@ -14,4 +14,7 @@ class Terminal {
   private val pty         = PtyProcess.exec(cmd, env.asJava)
   val stdin: OutputStream = pty.getOutputStream
   val stdout: InputStream = pty.getInputStream
+
+  def width: Int = pty.getWinSize.ws_col
+  def height: Int = pty.getWinSize.ws_row
 }

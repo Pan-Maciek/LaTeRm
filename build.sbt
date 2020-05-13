@@ -32,10 +32,3 @@ scalacOptions ++= Seq(
   "-deprecation",
   "-Xfatal-warnings"
 )
-
-// It would be nice to just import all members of project!
-initialCommands in console :=
-  "import gui.data._;" ++
-    "import gui.data.Data._;" ++
-    "import gui.data.Block._;" ++
-    "import gui.Style._;"

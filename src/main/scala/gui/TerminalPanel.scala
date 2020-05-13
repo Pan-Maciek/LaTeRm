@@ -5,6 +5,7 @@ import term.Terminal
 
 import scala.io.Source
 import config.UiConfig
+import gui.data.{TerminalLine}
 import scalafx.scene.paint.Color
 import javafx.beans.InvalidationListener
 import javafx.beans.value.ObservableValue
@@ -14,10 +15,24 @@ class TerminalPanel(setTitle: String => Unit) extends Canvas {
   width = UiConfig.width
   height = UiConfig.height
 
+  private var lines: List[TerminalLine] = List(TerminalLine())
+  val terminal                          = new Terminal
+
+  def draw(): Unit = { // quick and dummy implementation
+    // TODO: implement lazy drawing
+    graphicsContext2D.save()
+    for (line <- lines) {
+      drawBackground()
+      line.draw(graphicsContext2D)
+      graphicsContext2D.translate(0, line.height)
+    }
+    graphicsContext2D.restore()
+  }
+
   private val onResizeListener = new InvalidationListener() {
     def invalidated(observable: javafx.beans.Observable): Unit = {
-      // It's a place for logic when resizing.
-      drawBackground()
+      // TODO: resize calculate new dimensions for terminal; resize terminal and fix screen
+      // draw()
     }
   }
   width.addListener(onResizeListener)
@@ -27,7 +42,6 @@ class TerminalPanel(setTitle: String => Unit) extends Canvas {
   graphicsContext2D.fillRect(0, 0, width.get, height.get)
 
   def start(): Unit = {
-    val terminal = new Terminal
     onKeyTyped = e => terminal.stdin.write(e.getCharacter.codePointAt(0))
     new Thread(() => {
       sealed trait State
@@ -38,8 +52,8 @@ class TerminalPanel(setTitle: String => Unit) extends Canvas {
 
       var state: State = Default
       var style        = Style.default
-      var x            = 10
-      var y            = 10
+      var x            = 0
+      var y            = 0
 
       var parameter    = ""
       var intermediate = ""
@@ -54,19 +68,30 @@ class TerminalPanel(setTitle: String => Unit) extends Canvas {
           case (SYS, c)                           => parameter += c; SYS
           case (CSI, c) if 0x30 <= c && c <= 0x3F => parameter += c; CSI
           case (CSI, c) if 0x20 <= c && c <= 0x2F => intermediate += ""; CSI
+          case (Default, '\u0007') =>
+            print("Bell!")
+            Default
+          case (Default, '\b') =>
+            x -= 1
+            Default
           case (CSI, 'm') =>
             style = style.applySRG(parameter)
-            graphicsContext2D.fill = style.foreground
+            Default
+          case (CSI, 'K') =>
+            // delete in line
+            lines(y).delete(x)
             Default
           case (Default, '\n') =>
-            y += 10
             x = 0
+            y += 1
+            lines = lines :+ TerminalLine()
             Default
           case _ =>
-            graphicsContext2D.fillText(c.toString, x, y)
-            x += 10
+            lines(y).write(x, c, style)
+            x += 1
             Default
         }
+        draw() // TODO: update line
       }
     }).start()
   }

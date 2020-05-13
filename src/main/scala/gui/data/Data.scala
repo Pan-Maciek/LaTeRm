@@ -1,13 +1,19 @@
 package gui.data
 
+import java.awt.Color
+import java.awt.image.BufferedImage
+
 import gui.Style
+import javafx.embed.swing.SwingFXUtils
 import javafx.geometry.Bounds
+import javax.swing.JLabel
+import org.scilab.forge.jlatexmath.{TeXConstants, TeXFormula}
 import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.text.{Font, Text}
 
-import Ordering.Double.TotalOrdering
 import scala.collection.mutable
 import scala.collection.Searching._
+import scala.language.implicitConversions
 
 final case class Data() {}
 
@@ -248,19 +254,21 @@ final case class TerminalLine() extends Drawable {
     ssb.toString
   }
 
-  override def width: Double  = blocks.foldLeft(0.0)(_ + _.width)
-  override def height: Double = blocks.map(_.height).max
+  override def  width: Double = 0 // blocks.foldLeft(0.0)(_ + _.width)
+  override def height: Double = 15 // blocks.map(_.height).max
 
   def draw(graphicsContext2D: GraphicsContext): Unit = {
-    if (sb.nonEmpty) {
-      graphicsContext2D.save()
-      for (block <- blocks) {
-        if (block.len > 0) {
-          block.draw(graphicsContext2D)
-          graphicsContext2D.translate(block.width, 0)
+    synchronized {
+      if (sb.nonEmpty) {
+        graphicsContext2D.save()
+        for (block <- blocks) {
+          if (block.len > 0) {
+            block.draw(graphicsContext2D)
+            graphicsContext2D.translate(block.width, 0)
+          }
         }
+        graphicsContext2D.restore()
       }
-      graphicsContext2D.restore()
     }
   }
 
@@ -321,18 +329,32 @@ final case class TerminalLine() extends Drawable {
       textObject.getBoundsInLocal
     }
 
-    def width: Double  = bounds.getWidth
-    def height: Double = bounds.getHeight
+    private lazy val formula = new TeXFormula(text)
+    private lazy val icon = formula.createTeXIcon(TeXConstants.STYLE_DISPLAY, 20)
 
-    def text: String = sb.substring(from, to)
+    def width: Double = if (style.latexRendering) icon.getIconWidth else bounds.getWidth
+    def height: Double = if (style.latexRendering) icon.getIconHeight else bounds.getHeight
+
+    def text: String = sb.substring(from, to).replace('\n', ' ')
 
     override def draw(graphicsContext: GraphicsContext): Unit = {
       graphicsContext.font = Font.default
       graphicsContext.fill = style.background
       graphicsContext.fillRect(0, 0, width, height)
-
-      graphicsContext.fill = style.foreground
-      graphicsContext.fillText(text, 0, 0)
+      if (style.latexRendering) {
+        val jl = new JLabel()
+        val img = new BufferedImage(icon.getIconWidth, icon.getIconHeight, BufferedImage.TYPE_INT_RGB)
+        val g2 = img.createGraphics()
+//        jl.setForeground(colorConversion(style.foreground))
+        jl.setForeground(Color.yellow)
+        icon.paintIcon(jl, g2, 0, 0)
+        graphicsContext.drawImage(SwingFXUtils.toFXImage(img, null), 0, 0)
+      }
+      else {
+        graphicsContext.fill = style.foreground
+        graphicsContext.fillText(text, 0, 0)
+      }
     }
+
   }
 }

@@ -10,6 +10,7 @@ libraryDependencies += "org.scalafx"              %% "scalafx"                  
 libraryDependencies += "org.apache.logging.log4j" % "log4j-api"                 % "2.13.1"
 libraryDependencies += "org.apache.logging.log4j" % "log4j-core"                % "2.13.1"
 libraryDependencies += "org.scalactic"            %% "scalactic"                % "3.1.1"
+libraryDependencies += "com.lihaoyi"              %% "fastparse"                % "2.3.0"
 libraryDependencies += "org.scalatest"            %% "scalatest"                % "3.1.1" % "test"
 libraryDependencies += "org.scalatestplus"        %% "scalatestplus-scalacheck" % "3.1.0.0-RC2" % Test
 

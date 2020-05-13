@@ -7,12 +7,8 @@ import config.UiConfig
 import scalafx.scene.layout.StackPane
 
 object Main extends JFXApp {
-  def setTitle(title: String): Unit = {
-    stage.title = title
-  }
-  val terminal = new TerminalPanel(setTitle)
+  val terminal = new TerminalPanel()
   stage = new PrimaryStage {
-    title = "LaTeRm"
     scene = new Scene(UiConfig.width, UiConfig.height) {
       root = new StackPane() {
         children.add(terminal)
@@ -20,9 +16,10 @@ object Main extends JFXApp {
       }
     }
   }
-  terminal.start()
+  stage.title <== terminal.title
 
+  terminal.width <== stage.width
+  terminal.height <== stage.height
 
-  terminal.bind(stage.getScene.widthProperty, stage.getScene.heightProperty)
   terminal.requestFocus()
 }

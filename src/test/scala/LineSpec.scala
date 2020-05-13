@@ -172,11 +172,11 @@ class TerminalLineSpec extends AnyFlatSpec with Checkers {
     line.insert(2, 'c', style)
     line.insert(3, 'd', default)
 
-    line.delete(0)
+    line.deleteAt(0)
     assert(line.len() == 3)
     assert(line.blocksSize() == 3)
 
-    line.delete(1)
+    line.deleteAt(1)
     assert(line.len() == 2)
     assert(line.blocksSize() == 1)
   }
@@ -190,16 +190,16 @@ class TerminalLineSpec extends AnyFlatSpec with Checkers {
     line.insert(2, 'c', style)
     line.insert(3, 'd', default)
 
-    line.delete(0)
+    line.deleteAt(0)
     assert(line.len() == 3)
     assert(line.blocksSize() == 3)
 
-    line.delete(1)
+    line.deleteAt(1)
     assert(line.len() == 2)
     assert(line.blocksSize() == 1)
 
-    line.delete(1)
-    line.delete(0)
+    line.deleteAt(1)
+    line.deleteAt(0)
     assert(line.len() == 0)
     assert(line.blocksSize() == 1)
   }

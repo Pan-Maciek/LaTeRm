@@ -17,6 +17,13 @@ trait Drawable {
   def height: Double
 }
 
+/*
+  Todos:
+    - delete from column till len() -> deleteTo()
+    - delete from start till column -> deleteFrom()
+    - delete whole line             -> clearLine()
+ */
+
 final case class TerminalLine() extends Drawable {
 
   private val sb     = new StringBuilder
@@ -116,7 +123,7 @@ final case class TerminalLine() extends Drawable {
     }
   }
 
-  def delete(column: Int): Unit = {
+  def deleteAt(column: Int): Unit = {
     assert(column >= 0)
     assert(column < len())
 
@@ -137,6 +144,49 @@ final case class TerminalLine() extends Drawable {
       shiftBlocks(blockI + 1, -1)
     }
   }
+
+  /** Deletes characters up to specified column (exclusive) */
+  def deleteTo(column: Int): Unit = {
+    sb.delete(0, column)
+    val blockI = findBlock(column)
+
+    blocks.dropInPlace(blockI)
+    val block = blocks(blockI)
+    val shiftFrom =
+      if (block.to == column) {
+        blocks.dropInPlace(1); 0
+      } else {
+        val to       = block.to - column
+        val adjusted = block.copy(from = 0, to = to)
+        blocks(blockI) = adjusted; 1
+      }
+
+    val shiftBy = -column
+    shiftBlocks(shiftFrom, -column)
+  }
+
+  /** Deletes characters from (inclusive) till the end (len()) */
+  def deleteFrom(column: Int): Unit = {
+    sb.delete(column, len)
+    val blockI   = findBlock(column)
+    val deleteNo = blocksSize() - blockI - 1
+
+    blocks.dropRightInPlace(deleteNo)
+    val block    = blocks(blockI)
+    val adjusted = block.copy(to = column)
+
+    if (adjusted.len == 0) {
+      if (blocksSize() == 1) {
+        blocks(0) = Block.empty
+      } else {
+        blocks.drop(1)
+      }
+    } else
+      blocks(blockI) = adjusted
+  }
+
+  /** Deletes all characters in line */
+  def clearLine(): Unit = deleteFrom(0)
 
   /** Merges starting with block at `i`, note that this should also remove empty blocks.*/
   private def mergeAt(i: Int): Unit = {
@@ -213,7 +263,7 @@ final case class TerminalLine() extends Drawable {
   object Block {
 
     /** used by bin search */
-    implicit def ordering[A <: Block]: Ordering[Block] = Ordering.by(_.to)
+    implicit def ordering[A <: Block]: Ordering[Block] = Ordering.by(_.to - 1)
 
     /** singleton block holding one character */
     def apply(where: Int, style: Style): Block = Block(where, where + 1, style)

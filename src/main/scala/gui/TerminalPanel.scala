@@ -79,7 +79,7 @@ class TerminalPanel(setTitle: String => Unit) extends Canvas {
             Default
           case (CSI, 'K') =>
             // delete in line
-            lines(y).delete(x)
+            lines(y).deleteAt(x)
             Default
           case (Default, '\n') =>
             x = 0

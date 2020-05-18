@@ -15,6 +15,7 @@ case class StdoutDriver(
       action match {
         case Write(char)     => linesBuffer.write(char)
         case SetTitle(title) => Platform.runLater(() => terminal.title.set(title))
+        case SetStyle(sgr)   => linesBuffer.cursor.style = linesBuffer.cursor.style.applySgr(sgr)
         case _               => println(action)
       }
       terminal.update()

@@ -7,10 +7,10 @@ import NoWhitespace._
 
 case class Write(val char: Char)
 case class SetTitle(val str: String)
-case class Sgr(val seq: Seq[Int])
+case class SetStyle(val sgr: Seq[Int])
 
 object ActionParser {
-  def parse(input: InputStream) = new Iterator[Any] {
+  def parse(input: InputStream): Iterator[Any] = new Iterator[Any] {
     val iter = new Iterator[String] {
       override def hasNext: Boolean = true
       override def next(): String   = input.read.toChar.toString
@@ -48,8 +48,8 @@ object ActionParser {
       case _           => "Not Implemented"
     }
 
-  def SGR[_: P] =
-    P(ESC ~ "[" ~ Parameter ~ "m").map(Sgr)
+  def SGR[_: P]: P[SetStyle] =
+    P(ESC ~ "[" ~ Parameter ~ "m").map(SetStyle)
 
   def NextAction[_: P] = P(xOSC | SGR | AnyChar.!.map(str => Write(str(0))))
 }

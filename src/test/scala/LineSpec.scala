@@ -17,7 +17,7 @@ class TerminalLineSpec extends AnyFlatSpec with Checkers {
     line.write(0, 'a', default)
 
     assert(line.charAt(0) == 'a')
-    assert(line.len() == 1)
+    assert(line.len == 1)
   }
 
   it should "work correctly for multiple writes of one character at the same position" in {
@@ -28,7 +28,7 @@ class TerminalLineSpec extends AnyFlatSpec with Checkers {
     line.write(0, 'c', default)
 
     assert(line.charAt(0) == 'c')
-    assert(line.len() == 1)
+    assert(line.len == 1)
   }
 
   it should "work correctly when appending characters" in {
@@ -38,7 +38,7 @@ class TerminalLineSpec extends AnyFlatSpec with Checkers {
     line.write(1, 'b', default)
     line.write(2, 'c', default)
 
-    assert(line.getText() == "abc")
+    assert(line.getText == "abc")
   }
 
   it should "insert spaces when appending character beyond line's length" in {
@@ -49,7 +49,7 @@ class TerminalLineSpec extends AnyFlatSpec with Checkers {
 
     assert(line.charAt(0) == 'a')
     assert(line.charAt(9) == 'a')
-    assert(line.len() == 10)
+    assert(line.len == 10)
   }
 
   it should " not merge when using different styles" in {
@@ -111,7 +111,7 @@ class TerminalLineSpec extends AnyFlatSpec with Checkers {
     line.insert(0, 'a', default)
 
     assert(line.charAt(0) == 'a')
-    assert(line.len() == 3)
+    assert(line.len == 3)
   }
 
   it should "work correctly for multiple characters" in {
@@ -121,7 +121,7 @@ class TerminalLineSpec extends AnyFlatSpec with Checkers {
     line.insert(0, 'x', Style(Color.Red, Color.Blue, false))
 
     assert(line.charAt(0) == 'x')
-    assert(line.len() == 3)
+    assert(line.len == 3)
     assert(line.blocksSize() == 2)
   }
 
@@ -134,7 +134,7 @@ class TerminalLineSpec extends AnyFlatSpec with Checkers {
     line.insert(1, 'd', Style(Color.Blue, Color.Red, false))
 
     assert(line.blocksSize() == 3)
-    assert(line.len() == 4)
+    assert(line.len == 4)
   }
 
   it should "handle sequence of insertions with alternating styles" in {
@@ -170,11 +170,11 @@ class TerminalLineSpec extends AnyFlatSpec with Checkers {
     line.insert(3, 'd', default)
 
     line.deleteAt(0)
-    assert(line.len() == 3)
+    assert(line.len == 3)
     assert(line.blocksSize() == 3)
 
     line.deleteAt(1)
-    assert(line.len() == 2)
+    assert(line.len == 2)
     assert(line.blocksSize() == 1)
   }
 
@@ -187,16 +187,16 @@ class TerminalLineSpec extends AnyFlatSpec with Checkers {
     line.insert(3, 'd', default)
 
     line.deleteAt(0)
-    assert(line.len() == 3)
+    assert(line.len == 3)
     assert(line.blocksSize() == 3)
 
     line.deleteAt(1)
-    assert(line.len() == 2)
+    assert(line.len == 2)
     assert(line.blocksSize() == 1)
 
     line.deleteAt(1)
     line.deleteAt(0)
-    assert(line.len() == 0)
+    assert(line.len == 0)
     assert(line.blocksSize() == 1)
   }
 
@@ -210,16 +210,16 @@ class TerminalLineSpec extends AnyFlatSpec with Checkers {
     assert(line.blocksSize() == 2)
 
     line.deleteFrom(1)
-    assert(line.len() == 1)
+    assert(line.len == 1)
     assert(line.blocksSize() == 1)
 
     line.deleteFrom(0)
-    assert(line.len() == 0)
+    assert(line.len == 0)
     assert(line.blocksSize() == 1)
 
     line.write(0, 'x', style)
     line.deleteFrom(0)
-    assert(line.len() == 0)
+    assert(line.len == 0)
     assert(line.blocksSize() == 1)
   }
 
@@ -232,12 +232,12 @@ class TerminalLineSpec extends AnyFlatSpec with Checkers {
     line.insert(3, 'd', default)
 
     line.deleteTo(1)
-    assert(line.len() == 3)
+    assert(line.len == 3)
     assert(line.blocksSize() == 3)
 
     println(line)
-    line.deleteTo(line.len())
-    assert(line.len() == 0)
+    line.deleteTo(line.len)
+    assert(line.len == 0)
     assert(line.blocksSize() == 1)
   }
 

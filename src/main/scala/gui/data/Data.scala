@@ -15,22 +15,15 @@ import scala.collection.mutable
 import scala.collection.Searching._
 import scala.language.implicitConversions
 
-final case class Data() {}
-
-trait Drawable {
-  def draw(graphicsContext: GraphicsContext): Unit
-  def width: Double
-  def height: Double
-}
-
-final case class TerminalLine() extends Drawable {
+final case class TerminalLine() {
 
   private val sb     = new StringBuilder
   private val blocks = mutable.ArrayBuffer(Block.empty)
 
-  def getText(): String         = sb.toString()
+  def len: Int                  = sb.size
+  def getText: String           = sb.toString()
+  def isEmpty: Boolean          = sb.isEmpty
   def charAt(column: Int): Char = sb.charAt(column)
-  def len(): Int                = sb.size
   def blocksSize(): Int         = blocks.size
   def blocksSeq(): Seq[Block]   = blocks.toSeq
 
@@ -44,10 +37,10 @@ final case class TerminalLine() extends Drawable {
         // in case line is shorter append
         val missing = column - len
 
-        blocks.append(Block(len(), column, Style.default))
+        blocks.append(Block(len, column, Style.default))
         sb.append(" " * missing)
 
-        blocks.append(Block(len(), style))
+        blocks.append(Block(len, style))
         sb.append(v)
         blocks.length - 1
       } else {
@@ -124,7 +117,7 @@ final case class TerminalLine() extends Drawable {
 
   def deleteAt(column: Int): Unit = {
     assert(column >= 0)
-    assert(column < len())
+    assert(column < len)
 
     sb.deleteCharAt(column)
     val blockI = findBlock(column)
@@ -228,7 +221,7 @@ final case class TerminalLine() extends Drawable {
   }
 
   private def findBlock(column: Int): Int = {
-    assert(column <= len())
+    assert(column <= len)
 
     blocks.search(Block(column, column + 1, Style.default)) match {
       case Found(i)                               => i
@@ -247,24 +240,6 @@ final case class TerminalLine() extends Drawable {
     ssb.toString
   }
 
-  override def width: Double  = 0  // blocks.foldLeft(0.0)(_ + _.width)
-  override def height: Double = 15 // blocks.map(_.height).max
-
-  def draw(graphicsContext2D: GraphicsContext): Unit = {
-    synchronized {
-      if (sb.nonEmpty) {
-        graphicsContext2D.save()
-        for (block <- blocks) {
-          if (block.len > 0) {
-            block.draw(graphicsContext2D)
-            graphicsContext2D.translate(block.width, 0)
-          }
-        }
-        graphicsContext2D.restore()
-      }
-    }
-  }
-
   object Block {
 
     /** used by bin search */
@@ -277,8 +252,9 @@ final case class TerminalLine() extends Drawable {
     val empty: Block = Block(0, 0, Style.default)
   }
 
-  case class Block(from: Int, to: Int, style: Style) extends Drawable {
-    def len(): Int = to - from
+  case class Block(from: Int, to: Int, style: Style) {
+    def len(): Int   = to - from
+    def text: String = sb.substring(from, to).replace('\n', ' ')
 
     def shiftRight(by: Int = 1): Block = {
       val shiftedFrom = this.from + by
@@ -315,39 +291,5 @@ final case class TerminalLine() extends Drawable {
     }
 
     override def toString: String = f"Block{[$from,$to] - #${style.hashCode}}"
-
-    private lazy val bounds: Bounds = {
-      val textObject = new Text(text)
-      textObject.setFont(Font.default)
-      textObject.getBoundsInLocal
-    }
-
-    private lazy val formula = new TeXFormula(text)
-    private lazy val icon    = formula.createTeXIcon(TeXConstants.STYLE_DISPLAY, 20)
-
-    def width: Double  = if (style.latexRendering) icon.getIconWidth else bounds.getWidth
-    def height: Double = if (style.latexRendering) icon.getIconHeight else bounds.getHeight
-
-    def text: String = sb.substring(from, to).replace('\n', ' ')
-
-    override def draw(graphicsContext: GraphicsContext): Unit = {
-      graphicsContext.font = Font.default
-      graphicsContext.fill = style.background
-      graphicsContext.fillRect(0, 0, width, height)
-      if (style.latexRendering) {
-        val jl = new JLabel()
-        val img =
-          new BufferedImage(icon.getIconWidth, icon.getIconHeight, BufferedImage.TYPE_INT_RGB)
-        val g2 = img.createGraphics()
-//        jl.setForeground(colorConversion(style.foreground))
-        jl.setForeground(Color.yellow)
-        icon.paintIcon(jl, g2, 0, 0)
-        graphicsContext.drawImage(SwingFXUtils.toFXImage(img, null), 0, 0)
-      } else {
-        graphicsContext.fill = style.foreground
-        graphicsContext.fillText(text, 0, 0)
-      }
-    }
-
   }
 }

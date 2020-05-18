@@ -23,13 +23,6 @@ trait Drawable {
   def height: Double
 }
 
-/*
-  Todos:
-    - delete from column till len() -> deleteTo()
-    - delete from start till column -> deleteFrom()
-    - delete whole line             -> clearLine()
- */
-
 final case class TerminalLine() extends Drawable {
 
   private val sb     = new StringBuilder
@@ -254,7 +247,7 @@ final case class TerminalLine() extends Drawable {
     ssb.toString
   }
 
-  override def  width: Double = 0 // blocks.foldLeft(0.0)(_ + _.width)
+  override def width: Double  = 0  // blocks.foldLeft(0.0)(_ + _.width)
   override def height: Double = 15 // blocks.map(_.height).max
 
   def draw(graphicsContext2D: GraphicsContext): Unit = {
@@ -330,9 +323,9 @@ final case class TerminalLine() extends Drawable {
     }
 
     private lazy val formula = new TeXFormula(text)
-    private lazy val icon = formula.createTeXIcon(TeXConstants.STYLE_DISPLAY, 20)
+    private lazy val icon    = formula.createTeXIcon(TeXConstants.STYLE_DISPLAY, 20)
 
-    def width: Double = if (style.latexRendering) icon.getIconWidth else bounds.getWidth
+    def width: Double  = if (style.latexRendering) icon.getIconWidth else bounds.getWidth
     def height: Double = if (style.latexRendering) icon.getIconHeight else bounds.getHeight
 
     def text: String = sb.substring(from, to).replace('\n', ' ')
@@ -343,14 +336,14 @@ final case class TerminalLine() extends Drawable {
       graphicsContext.fillRect(0, 0, width, height)
       if (style.latexRendering) {
         val jl = new JLabel()
-        val img = new BufferedImage(icon.getIconWidth, icon.getIconHeight, BufferedImage.TYPE_INT_RGB)
+        val img =
+          new BufferedImage(icon.getIconWidth, icon.getIconHeight, BufferedImage.TYPE_INT_RGB)
         val g2 = img.createGraphics()
 //        jl.setForeground(colorConversion(style.foreground))
         jl.setForeground(Color.yellow)
         icon.paintIcon(jl, g2, 0, 0)
         graphicsContext.drawImage(SwingFXUtils.toFXImage(img, null), 0, 0)
-      }
-      else {
+      } else {
         graphicsContext.fill = style.foreground
         graphicsContext.fillText(text, 0, 0)
       }

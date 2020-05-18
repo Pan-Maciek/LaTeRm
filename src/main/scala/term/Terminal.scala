@@ -12,7 +12,7 @@ import scala.jdk.CollectionConverters._
 class Terminal {
   var foo: Unit => Unit = _
   def update(): Unit = {
-    if (foo != null) foo()
+    if (foo != null) foo(())
   }
   def onUpdate(function: Unit => Unit) = foo = function
 
@@ -20,7 +20,7 @@ class Terminal {
   private val env =
     Map("TERM" -> "xterm-color") ++ SystemConstants.environment
 
-  private val pty = PtyProcess.exec(cmd, env.asJava)
+  private val pty                 = PtyProcess.exec(cmd, env.asJava)
   private val stdin: OutputStream = pty.getOutputStream
   private val stdout: InputStream = pty.getInputStream
 
@@ -37,7 +37,7 @@ class Terminal {
   private val linesBuffer = LinesBuffer(width, height)
 
   def lines: Seq[TerminalLine] = linesBuffer.lines
-  def cursor: Cursor = linesBuffer.cursor
+  def cursor: Cursor           = linesBuffer.cursor
 
   StdoutDriver(this, linesBuffer, stdout)
 }

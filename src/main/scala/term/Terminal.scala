@@ -27,10 +27,10 @@ class Terminal {
   def write(char: Int): Unit = stdin.write(char)
 
   val title = new StringProperty(this, "title", "LaTeRm")
-  val width: IntegerProperty = new IntegerProperty(this, "width", pty.getWinSize.ws_col) {
+  val width: IntegerProperty = new IntegerProperty(this, "width", 100) {
     onChange { (_, oldValue, newValue) => () } // TODO resizing logic
   }
-  val height: IntegerProperty = new IntegerProperty(this, "height", pty.getWinSize.ws_row) {
+  val height: IntegerProperty = new IntegerProperty(this, "height", 100) {
     onChange { (_, oldValue, newValue) => () } // TODO resizing logic
   }
 

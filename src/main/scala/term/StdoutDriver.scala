@@ -13,10 +13,13 @@ case class StdoutDriver(
   new Thread(() => {
     for (action <- ActionParser.parse(input)) {
       action match {
-        case Write(char)     => linesBuffer.write(char)
-        case SetTitle(title) => Platform.runLater(() => terminal.title.set(title))
-        case SetStyle(sgr)   => linesBuffer.cursor.style = linesBuffer.cursor.style.applySgr(sgr)
-        case _               => println(action)
+        case Write(char)      => linesBuffer.write(char)
+        case SetTitle(title)  => Platform.runLater(() => terminal.title.set(title))
+        case SetStyle(sgr)    => linesBuffer.cursor.style = linesBuffer.cursor.style.applySgr(sgr)
+        case MoveCursor(x, y) => linesBuffer.cursor.translate(x, y)
+        case SetColumn(n)     => linesBuffer.cursor.setColumn(n)
+        case SetCursor(x, y)  => linesBuffer.cursor.setPosition(x, y)
+        case _                => println(action)
       }
       terminal.update()
     }

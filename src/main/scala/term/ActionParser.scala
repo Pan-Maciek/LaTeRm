@@ -8,6 +8,9 @@ import NoWhitespace._
 case class Write(val char: Char)
 case class SetTitle(val str: String)
 case class SetStyle(val sgr: Seq[Int])
+case class MoveCursor(val x: Int, val y: Int)
+case class SetColumn(val col: Int)
+case class SetCursor(val x: Int, val y: Int)
 
 object ActionParser {
   def parse(input: InputStream): Iterator[Any] = new Iterator[Any] {
@@ -29,7 +32,7 @@ object ActionParser {
   // https://en.wikipedia.org/wiki/ANSI_escape_code
   def Number[_: P]: P[Int] =
     P(CharIn("0-9").rep.!.map {
-      case "" => 0
+      case "" => 1
       case x  => x.toInt
     })
 
@@ -48,8 +51,40 @@ object ActionParser {
       case _           => "Not Implemented"
     }
 
+  def cursorCSI[_: P] =
+    P(ESC ~ "[" ~ Number ~ CharIn("A-G").!).map {
+      case (n, "A") => MoveCursor(0, -n) // CCU
+      case (n, "B") => MoveCursor(0,  n) // CUD
+      case (n, "C") => MoveCursor(n,  0) // CUF
+      case (n, "D") => MoveCursor(-n, 0) // CUB
+      case (n, "E") => MoveCursor(Int.MinValue,  n) // CNL
+      case (n, "F") => MoveCursor(Int.MinValue, -n) // CPL
+      case (n, "G") => SetColumn(n) // CHA
+      case _ => "Not Implemented"
+    }
+
+  def foo[_: P] =
+    P(CharIn("\n\r\b").!).map {
+      case "\n" => MoveCursor(Int.MinValue, 1)
+      case "\r" => SetColumn(1)
+      case "\b" => MoveCursor(-1, 0)
+    }
+
+  def cursorAbsoluteCSI[_: P] =
+    P(ESC ~ "[" ~ Parameter ~ "H").map {
+      case x :: y :: Nil => SetCursor(x, y)
+      case _ => ???
+    }
+
   def SGR[_: P]: P[SetStyle] =
     P(ESC ~ "[" ~ Parameter ~ "m").map(SetStyle)
 
-  def NextAction[_: P] = P(xOSC | SGR | AnyChar.!.map(str => Write(str(0))))
+  def NextAction[_: P] = P(
+    cursorAbsoluteCSI
+    | foo
+    | cursorCSI
+    | xOSC
+    | SGR
+    | BEL
+    | AnyChar.!.map(str => Write(str(0))))
 }

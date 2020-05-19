@@ -5,6 +5,7 @@ import scalafx.application.JFXApp.PrimaryStage
 import scalafx.scene.Scene
 import config.UiConfig
 import scalafx.scene.layout.StackPane
+import javafx.application.Platform
 
 object Main extends JFXApp {
   val terminal = new TerminalPanel()
@@ -21,5 +22,6 @@ object Main extends JFXApp {
   terminal.width <== stage.width
   terminal.height <== stage.height
 
+  terminal.drawBlank()
   terminal.requestFocus()
 }

@@ -32,10 +32,8 @@ object DrawableInstances {
         if (!line.isEmpty) {
           gc.save()
           for (block <- line.blocksSeq()) {
-            if (block.len > 0) {
-              block.draw
-              gc.translate(block.width, 0)
-            }
+            block.draw
+            gc.translate(block.width, 0)
           }
           gc.restore()
         }
@@ -47,9 +45,6 @@ object DrawableInstances {
   implicit class BlockOps(block: TerminalLine#Block) extends Drawable[TerminalLine#Block] {
     private def style = block.style
 
-    def width: Double  = if (style.latexRendering) icon.getIconWidth else bounds.getWidth
-    def height: Double = if (style.latexRendering) icon.getIconHeight else bounds.getHeight
-
     private lazy val bounds: Bounds = {
       val textObject = new Text(block.text)
       textObject.setFont(Font.default)
@@ -59,11 +54,14 @@ object DrawableInstances {
     private lazy val formula = new TeXFormula(block.text)
     private lazy val icon    = formula.createTeXIcon(TeXConstants.STYLE_DISPLAY, 20)
 
+    def width: Double  = if (style.latexRendering) icon.getIconWidth else bounds.getWidth
+    def height: Double = if (style.latexRendering) icon.getIconHeight else bounds.getHeight
+
     def draw(implicit gc: GraphicsContext): Unit = {
       gc.font = Font.default
-      gc.fill = block.style.background
+      gc.fill = style.background
       gc.fillRect(0, 0, width, height)
-      if (block.style.latexRendering) {
+      if (style.latexRendering) {
         val jl = new JLabel()
         val img =
           new BufferedImage(icon.getIconWidth, icon.getIconHeight, BufferedImage.TYPE_INT_RGB)
@@ -73,7 +71,7 @@ object DrawableInstances {
         icon.paintIcon(jl, g2, 0, 0)
         gc.drawImage(SwingFXUtils.toFXImage(img, null), 0, 0)
       } else {
-        gc.fill = block.style.foreground
+        gc.fill = style.foreground
         gc.fillText(block.text, 0, 0)
       }
     }

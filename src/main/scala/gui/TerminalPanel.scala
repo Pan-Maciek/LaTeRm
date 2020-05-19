@@ -10,22 +10,35 @@ import scalafx.beans.property.StringProperty
 import gui.drawable.DrawableInstances._
 
 class TerminalPanel() extends Canvas {
-  width = UiConfig.width
-  height = UiConfig.height
-
   implicit val gc = graphicsContext2D
 
   val terminal              = new Terminal
   def title: StringProperty = terminal.title
 
-  def draw(): Unit = { // quick and dummy implementation
+  def drawBlank(): Unit = {
     synchronized {
       gc.fill = Color.Black
       gc.fillRect(0, 0, width.get, height.get)
-      // TODO: implement lazy drawing
+    }
+  }
+
+  def redraw(): Unit = {
+    synchronized {
       gc.save()
       gc.translate(0, 30)
-      for (line <- terminal.lines) {
+      for (line <- terminal.lastLines) {
+        line.draw
+        gc.translate(0, line.height)
+      }
+      gc.restore()
+    }
+  }
+
+  def draw(): Unit = { // quick and dummy implementation
+    synchronized {
+      gc.save()
+      gc.translate(0, 30)
+      for (line <- terminal.lastLines) {
         line.draw
         gc.translate(0, line.height)
       }

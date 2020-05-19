@@ -21,6 +21,7 @@ object Main extends JFXApp {
 
   terminal.width <== stage.width
   terminal.height <== stage.height
+  stage.onCloseRequest = _ => System.exit(0)
 
   terminal.drawBlank()
   terminal.requestFocus()

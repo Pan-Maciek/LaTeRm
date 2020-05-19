@@ -15,11 +15,16 @@ case class SetCursor(val x: Int, val y: Int)
 object ActionParser {
   def parse(input: InputStream): Iterator[Any] = new Iterator[Any] {
     val iter = new Iterator[String] {
-      override def hasNext: Boolean = true
-      override def next(): String   = input.read.toChar.toString
+      var _hasNext = true
+      override def hasNext: Boolean = _hasNext
+      override def next(): String   = {
+        val char = input.read
+        if (char == -1) _hasNext = false
+        char.toChar.toString
+      }
     }
 
-    override def hasNext: Boolean = true
+    override def hasNext: Boolean = iter.hasNext
 
     override def next(): Any =
       fastparse.parse(iter, NextAction(_)) match {

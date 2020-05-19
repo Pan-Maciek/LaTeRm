@@ -1,13 +1,15 @@
 package gui
 
+import java.util.{Timer, TimerTask}
+
 import scalafx.scene.canvas.Canvas
 import term.Terminal
 import config.UiConfig
 import scalafx.application.Platform
 import scalafx.scene.paint.Color
 import scalafx.beans.property.StringProperty
-
 import gui.drawable.DrawableInstances._
+import scalafx.geometry.VPos
 
 class TerminalPanel() extends Canvas {
   implicit val gc = graphicsContext2D
@@ -16,17 +18,16 @@ class TerminalPanel() extends Canvas {
   def title: StringProperty = terminal.title
 
   def drawBlank(): Unit = {
-    synchronized {
       gc.fill = Color.Black
       gc.fillRect(0, 0, width.get, height.get)
-    }
   }
 
+  gc.textBaseline = VPos.Top
   private def redraw(): Unit = {
     drawBlank()
 
     gc.save()
-    gc.translate(0, 30)
+    gc.translate(0, UiConfig.DefaultLineHeight)
     for (line <- terminal.lines) {
       line.draw
       gc.translate(0, line.height)
@@ -36,48 +37,24 @@ class TerminalPanel() extends Canvas {
 
   private def partialDraw(): Unit = {
     gc.save()
-    gc.translate(0, 30)
-    var runningHeight = 30.0
+    gc.translate(0, UiConfig.DefaultLineHeight)
     for ((line, changed) <- terminal.changedLines) {
       if (changed) {
-        // FIXME For some reason it does not clear the line!
-        // bcs of this line is drawn multiple times and it looks as if it were bold
         gc.fill = Color.Black
         gc.fillRect(0, 0, width.get, line.height)
-        // ------------------------------------------------------
         line.draw
-
       }
-      runningHeight += line.height
       gc.translate(0, line.height)
     }
     gc.restore()
   }
 
-  def draw(): Unit = { // quick and dummy implementation
-    synchronized {
-      if (terminal.modified) {
-        redraw()
-      } else {
-        partialDraw()
-      }
-    }
-  }
+  width.onChange { (_, _, _) => { redraw() } }
+  height.onChange { (_, _, _) => { redraw() } }
 
-  terminal.onUpdate { _ => draw() }
-
-  width.onChange { (_, _, _) =>
-    {
-      // terminal.width = ???
-      draw()
-    }
-  }
-  height.onChange { (_, _, _) =>
-    {
-      // terminal.height = ???
-      draw()
-    }
-  }
+  val timer = new Timer()
+  val task  = new TimerTask { def run() = partialDraw() }
+  timer.schedule(task, 500L, UiConfig.updatePeriod)
 
   onKeyTyped = e => terminal.write(e.getCharacter.codePointAt(0))
 }

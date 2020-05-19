@@ -6,11 +6,13 @@ import javafx.geometry.Bounds
 import javax.swing.JLabel
 import org.scilab.forge.jlatexmath.{TeXConstants, TeXFormula}
 import scalafx.scene.canvas.GraphicsContext
-import scalafx.scene.text.{Font, Text}
+import scalafx.scene.text.{Font, Text, TextAlignment}
 import gui.data.TerminalLine
 import java.awt.image.BufferedImage
-import java.awt.Color
+
 import config.UiConfig
+import scalafx.geometry.VPos
+import scalafx.scene.paint.Color
 
 trait Drawable[A] {
   def draw(implicit graphicsContext: GraphicsContext): Unit
@@ -62,11 +64,10 @@ object DrawableInstances {
       gc.fillRect(0, 0, width, height)
       if (style.latexRendering) {
         val jl = new JLabel()
-        val img =
-          new BufferedImage(icon.getIconWidth, icon.getIconHeight, BufferedImage.TYPE_INT_RGB)
+        val img = new BufferedImage(icon.getIconWidth, icon.getIconHeight, BufferedImage.TYPE_INT_RGB)
         val g2 = img.createGraphics()
 //        jl.setForeground(colorConversion(style.foreground))
-        jl.setForeground(Color.yellow)
+//        jl.setForeground(Color.yellow)
         icon.paintIcon(jl, g2, 0, 0)
         gc.drawImage(SwingFXUtils.toFXImage(img, null), 0, 0)
       } else {

@@ -10,12 +10,6 @@ import scalafx.beans.property.{IntegerProperty, StringProperty}
 import scala.jdk.CollectionConverters._
 
 class Terminal {
-  var foo: Unit => Unit = _
-  def update(): Unit = {
-    if (foo != null) foo(())
-  }
-  def onUpdate(function: Unit => Unit) = foo = function
-
   private val cmd = Array(SystemConstants.shell)
   private val env =
     Map("TERM" -> "xterm-color") ++ SystemConstants.environment
@@ -41,5 +35,5 @@ class Terminal {
   def cursor: Cursor                             = linesBuffer.cursor
   def modified: Boolean                          = linesBuffer.modified
 
-  StdoutDriver(this, linesBuffer, stdout)
+  val driver = StdoutDriver(this, linesBuffer, stdout)
 }

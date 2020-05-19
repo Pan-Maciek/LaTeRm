@@ -64,8 +64,7 @@ case class LinesBuffer(val width: IntegerProperty, val height: IntegerProperty) 
         _mask(i) = false
       }
 
-      // change this line and watch how bugs emerge!
-      _modified = true
+      _modified = false
       _lines.slice(from, until).toSeq
     }
   }

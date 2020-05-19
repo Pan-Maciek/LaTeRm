@@ -10,6 +10,7 @@ import scalafx.scene.text.{Font, Text}
 import gui.data.TerminalLine
 import java.awt.image.BufferedImage
 import java.awt.Color
+import config.UiConfig
 
 trait Drawable[A] {
   def draw(implicit graphicsContext: GraphicsContext): Unit
@@ -24,8 +25,8 @@ object Drawable {
 
 object DrawableInstances {
   implicit class TerminalLineOps(line: TerminalLine) extends Drawable[TerminalLine] {
-    override def width: Double  = 0  // blocks.foldLeft(0.0)(_ + _.width)
-    override def height: Double = 15 // blocks.map(_.height).max
+    override def width: Double  = 0                          // blocks.foldLeft(0.0)(_ + _.width)
+    override def height: Double = UiConfig.DefaultLineHeight // blocks.map(_.height).max
 
     def draw(implicit gc: GraphicsContext): Unit = {
       synchronized {

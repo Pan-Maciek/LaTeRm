@@ -13,7 +13,7 @@ object Main extends JFXApp {
     scene = new Scene(UiConfig.width, UiConfig.height) {
       root = new StackPane() {
         children.add(terminal)
-        resizable.set(true)
+        resizable.set(false)
       }
     }
   }

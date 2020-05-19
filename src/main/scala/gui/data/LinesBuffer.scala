@@ -5,6 +5,7 @@ import term.Cursor
 
 import scala.collection.mutable.ArrayBuffer
 import gui.drawable.DrawableInstances._
+import config.UiConfig
 
 /**
   * Note that function write should be rewritten so that it handles only standard characters write
@@ -14,8 +15,9 @@ case class LinesBuffer(val width: IntegerProperty, val height: IntegerProperty) 
   val cursor: Cursor             = Cursor(width, height)
   var myBufferMaxLinesCount: Int = LinesBuffer.DEFAULT_MAX_LINES_COUNT
 
-  private val _mask  = new ArrayBuffer[Boolean]() += true
-  private val _lines = ArrayBuffer(TerminalLine())
+  private val _mask     = new ArrayBuffer[Boolean]() += true
+  private val _lines    = ArrayBuffer(TerminalLine())
+  private var _modified = false
 
   def linesCount: Int = _lines.length
 
@@ -29,6 +31,7 @@ case class LinesBuffer(val width: IntegerProperty, val height: IntegerProperty) 
           synchronized {
             _lines += (TerminalLine())
             _mask += true
+            _modified = true
           }
         }
         synchronized { _mask(cursor.y) = true }
@@ -88,14 +91,18 @@ case class LinesBuffer(val width: IntegerProperty, val height: IntegerProperty) 
   private def lastLinesIndices: (Int, Int) = {
     var i             = linesCount - 1
     var runningHeight = 0.0
-    val maxH          = height.get
+    val maxH          = UiConfig.height - 25
 
     while (i >= 0 && runningHeight < maxH) {
       runningHeight += _lines(i).height
       i -= 1
     }
 
-    while (runningHeight > maxH) {
+    if (i < 0) {
+      i += 1
+    }
+
+    if (runningHeight > maxH) {
       runningHeight -= _lines(i).height
       i += 1
     }

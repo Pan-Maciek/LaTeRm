@@ -36,6 +36,7 @@ class TerminalPanel() extends Canvas {
 
   def draw(): Unit = { // quick and dummy implementation
     synchronized {
+      drawBlank()
       gc.save()
       gc.translate(0, 30)
       for (line <- terminal.lastLines) {

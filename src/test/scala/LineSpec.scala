@@ -10,7 +10,7 @@ import org.scalacheck.Arbitrary
 
 class TerminalLineSpec extends AnyFlatSpec with Checkers {
   val default = Style.default
-  val style   = Style(Color.Blue, Color.Red, false)
+  val style   = Style(Color.Blue, Color.Red, false, false)
 
   "write" should "work correctly for one character" in {
     val line = new TerminalLine()
@@ -58,7 +58,7 @@ class TerminalLineSpec extends AnyFlatSpec with Checkers {
     line.write(0, 'a', default)
     line.write(1, 'b', default)
     line.write(2, 'c', default)
-    line.write(3, 'd', Style(Color.Blue, Color.Red, false))
+    line.write(3, 'd', Style(Color.Blue, Color.Red, false, false))
 
     assert(line.blocksSize() == 2)
   }
@@ -118,7 +118,7 @@ class TerminalLineSpec extends AnyFlatSpec with Checkers {
     val line = new TerminalLine()
     line.insert(0, 'a', default)
     line.insert(1, 'a', default)
-    line.insert(0, 'x', Style(Color.Red, Color.Blue, false))
+    line.insert(0, 'x', Style(Color.Red, Color.Blue, false, false))
 
     assert(line.charAt(0) == 'x')
     assert(line.len == 3)
@@ -131,7 +131,7 @@ class TerminalLineSpec extends AnyFlatSpec with Checkers {
     line.insert(0, 'a', default)
     line.insert(1, 'b', default)
     line.insert(2, 'c', default)
-    line.insert(1, 'd', Style(Color.Blue, Color.Red, false))
+    line.insert(1, 'd', Style(Color.Blue, Color.Red, false, false))
 
     assert(line.blocksSize() == 3)
     assert(line.len == 4)

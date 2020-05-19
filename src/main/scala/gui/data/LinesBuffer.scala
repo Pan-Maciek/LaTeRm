@@ -23,26 +23,19 @@ case class LinesBuffer(val width: IntegerProperty, val height: IntegerProperty) 
   def modified: Boolean = _modified
 
   def write(char: Char): Unit = {
-    char match {
-      case '\n' => cursor.y += 1
-      case '\b' => cursor.x -= 1
-      case '\r' => cursor.x = 0
-      case _ => {
-        while (cursor.y >= _lines.size) {
-          synchronized {
-            _lines += (TerminalLine())
-            _mask += true
-            _modified = true
-          }
-        }
-        synchronized { _mask(cursor.y) = true }
-        _lines(cursor.y).write(cursor.x, char, cursor.style)
-        cursor.x += 1
-        if (cursor.x == width.value) {
-          cursor.x = 0
-          cursor.y += 1
-        }
+    while (cursor.y >= _lines.size) {
+      synchronized {
+        _lines += (TerminalLine())
+        _mask += true
+        _modified = true
       }
+    }
+    synchronized { _mask(cursor.y) = true }
+    _lines(cursor.y).write(cursor.x, char, cursor.style)
+    cursor.x += 1
+    if (cursor.x == width.value) {
+      cursor.x = 0
+      cursor.y += 1
     }
   }
 

@@ -17,9 +17,10 @@ case class LinesBuffer(val width: IntegerProperty, val height: IntegerProperty) 
 
   private val _mask     = new ArrayBuffer[Boolean]() += true
   private val _lines    = ArrayBuffer(TerminalLine())
-  private var _modified = false
+  private var _modified = true
 
-  def linesCount: Int = _lines.length
+  def linesCount: Int   = _lines.length
+  def modified: Boolean = _modified
 
   def write(char: Char): Unit = {
     char match {
@@ -42,17 +43,6 @@ case class LinesBuffer(val width: IntegerProperty, val height: IntegerProperty) 
           cursor.y += 1
         }
       }
-    }
-  }
-
-  /** Returns list of lines with boolean indicating whether it has been modified,
-    *  this one shouldn't be used as it returns all lines!
-    * */
-  def lines: Seq[(TerminalLine, Boolean)] = {
-    synchronized {
-      val seq = _lines.toSeq.zip(_mask)
-      _mask.mapInPlace(bool => false)
-      seq
     }
   }
 
@@ -81,6 +71,7 @@ case class LinesBuffer(val width: IntegerProperty, val height: IntegerProperty) 
         _mask(i) = false
       }
 
+      _modified = false
       _lines.slice(from, until).toSeq
     }
   }

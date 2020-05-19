@@ -22,30 +22,48 @@ class TerminalPanel() extends Canvas {
     }
   }
 
-  def redraw(): Unit = {
-    synchronized {
-      gc.save()
-      gc.translate(0, 30)
-      for (line <- terminal.lastLines) {
-        line.draw
-        gc.translate(0, line.height)
-      }
-      gc.restore()
+  private def redraw(): Unit = {
+    drawBlank()
+
+    gc.save()
+    gc.translate(0, 30)
+    for (line <- terminal.lines) {
+      line.draw
+      gc.translate(0, line.height)
     }
+    gc.restore()
+  }
+
+  private def partialDraw(): Unit = {
+    gc.save()
+    gc.translate(0, 30)
+    var runningHeight = 30.0
+    for ((line, changed) <- terminal.changedLines) {
+      if (changed) {
+        // FIXME For some reason it does not clear the line!
+        // bcs of this line is drawn multiple times and it looks as if it were bold
+        gc.fill = Color.Black
+        gc.fillRect(0, runningHeight, width.get, line.height)
+        // ------------------------------------------------------
+        line.draw
+
+      }
+      runningHeight += line.height
+      gc.translate(0, line.height)
+    }
+    gc.restore()
   }
 
   def draw(): Unit = { // quick and dummy implementation
     synchronized {
-      drawBlank()
-      gc.save()
-      gc.translate(0, 30)
-      for (line <- terminal.lastLines) {
-        line.draw
-        gc.translate(0, line.height)
+      if (terminal.modified) {
+        redraw()
+      } else {
+        partialDraw()
       }
-      gc.restore()
     }
   }
+
   terminal.onUpdate { _ => draw() }
 
   width.onChange { (_, _, _) =>

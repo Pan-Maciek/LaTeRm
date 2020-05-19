@@ -16,7 +16,7 @@ case class StdoutDriver(
     // redraw thread
     val timer = new Timer()
     val task  = new TimerTask { def run() = terminal.update() }
-    timer.schedule(task, 100L, UiConfig.updatePeriod)
+    timer.schedule(task, 500L, UiConfig.updatePeriod)
 
     for (action <- ActionParser.parse(input)) {
       action match {

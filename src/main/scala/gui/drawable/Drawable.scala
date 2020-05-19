@@ -29,15 +29,13 @@ object DrawableInstances {
     override def height: Double = UiConfig.DefaultLineHeight // blocks.map(_.height).max
 
     def draw(implicit gc: GraphicsContext): Unit = {
-      synchronized {
-        if (!line.isEmpty) {
-          gc.save()
-          for (block <- line.blocksSeq()) {
-            block.draw
-            gc.translate(block.width, 0)
-          }
-          gc.restore()
+      if (!line.isEmpty) {
+        gc.save()
+        for (block <- line.blocksSeq()) {
+          block.draw
+          gc.translate(block.width, 0)
         }
+        gc.restore()
       }
     }
 

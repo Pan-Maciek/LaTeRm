@@ -43,7 +43,7 @@ class TerminalPanel() extends Canvas {
         // FIXME For some reason it does not clear the line!
         // bcs of this line is drawn multiple times and it looks as if it were bold
         gc.fill = Color.Black
-        gc.fillRect(0, runningHeight, width.get, line.height)
+        gc.fillRect(0, 0, width.get, line.height)
         // ------------------------------------------------------
         line.draw
 

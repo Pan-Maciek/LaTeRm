@@ -5,16 +5,22 @@ import java.io.InputStream
 import fastparse._
 import NoWhitespace._
 
-case class Write(val char: Char)
-case class SetTitle(val str: String)
-case class SetStyle(val sgr: Seq[Int])
-case class MoveCursor(val x: Int, val y: Int)
-case class SetColumn(val col: Int)
-case class SetCursor(val x: Int, val y: Int)
-case object ToggleLatex
+sealed trait Action
+case class Write(char: Char) extends Action
+case class SetTitle(str: String) extends Action
+case class SetStyle(sgr: Seq[Int]) extends Action
+case class MoveCursor(x: Int, y: Int) extends Action
+case class SetColumn(col: Int) extends Action
+case class SetCursor(x: Int, y: Int) extends Action
+case class ClearDisplay(clearType: Int) extends Action
+case class ClearLine(clearType: Int) extends Action
+case object SaveCursorPosition extends Action
+case object RestoreCursorPosition extends Action
+case object ToggleLatex extends Action
+case object Bell extends Action
 
 object ActionParser {
-  def parse(input: InputStream): Iterator[Any] = new Iterator[Any] {
+  def parse(input: InputStream): Iterator[Action] = new Iterator[Action] {
     val iter = new Iterator[String] {
       var _hasNext = true
       override def hasNext: Boolean = _hasNext
@@ -27,7 +33,7 @@ object ActionParser {
 
     override def hasNext: Boolean = iter.hasNext
 
-    override def next(): Any =
+    override def next(): Action =
       fastparse.parse(iter, NextAction(_)) match {
         case Parsed.Success(value, _) => value
         case Parsed.Failure(_, _, _)  => ???
@@ -36,29 +42,29 @@ object ActionParser {
 
   // https://en.wikipedia.org/wiki/C0_and_C1_control_codes
   // https://en.wikipedia.org/wiki/ANSI_escape_code
-  def Number[_: P]: P[Int] =
+  def Number[_: P](defaultValue: Int): P[Int] =
     P(CharIn("0-9").rep.!.map {
-      case "" => 1
+      case "" => defaultValue
       case x  => x.toInt
     })
 
   def Parameter[_: P]: P[Seq[Int]] =
-    P(Number.rep(sep = ";"))
+    P(Number(1).rep(sep = ";"))
   def Intermediate[_: P]: P[String] =
     P(CharIn(" -/").rep(0).!)
 
   def ESC[_: P]: P[Unit] = P("\u001b")
-  def BEL[_: P]          = P("\u0007") // Bell, Alert
+  def BEL[_: P]          = P("\u0007").map(_ => Bell) // Bell, Alert
   def ST[_: P]           = P("\u009c") // String Terminator
 
   def xOSC[_: P] =
-    P(ESC ~ "]" ~ CharPred(_ != '\u0007').rep.! ~ BEL).map { // Operating System Command (xterm)
+    P(ESC ~ "]" ~ CharPred(_ != '\u0007').rep.! ~ "\u0007").map { // Operating System Command (xterm)
       case s"0;$title" => SetTitle(title)
-      case _           => "Not Implemented"
+      case _           => ???
     }
 
   def cursorCSI[_: P] =
-    P(ESC ~ "[" ~ Number ~ CharIn("A-G").!).map {
+    P(ESC ~ "[" ~ Number(1) ~ CharIn("A-G").!).map {
       case (n, "A") => MoveCursor(0, -n) // CCU
       case (n, "B") => MoveCursor(0,  n) // CUD
       case (n, "C") => MoveCursor(n,  0) // CUF
@@ -66,10 +72,10 @@ object ActionParser {
       case (n, "E") => MoveCursor(Int.MinValue,  n) // CNL
       case (n, "F") => MoveCursor(Int.MinValue, -n) // CPL
       case (n, "G") => SetColumn(n) // CHA
-      case _ => "Not Implemented"
+      case _ => ???
     }
 
-  def SpecialCharacters[_: P] =
+  def specialCharacters[_: P] =
     P(CharIn("\n\r\b").!).map {
       case "\n" => MoveCursor(Int.MinValue, 1)
       case "\r" => SetColumn(1)
@@ -82,19 +88,35 @@ object ActionParser {
       case _ => ???
     }
 
+  def cursorHistory[_: P] =
+    P(ESC ~ "[" ~ CharIn("su").!).map {
+      case "s" => SaveCursorPosition
+      case "u" => RestoreCursorPosition
+      case _  => ???
+    }
+
   def SGR[_: P]: P[SetStyle] =
     P(ESC ~ "[" ~ Parameter ~ "m").map(SetStyle)
 
   def toggleLatex[_: P] =
     P(ESC ~ "[Z").map(_ => ToggleLatex)
 
-  def NextAction[_: P] = P(
+  def clear[_: P] =
+    P(ESC ~ "[" ~ Number(0) ~ CharIn("JK").!).map {
+      case (n, "J") => ClearDisplay(n)
+      case (n, "K") => ClearLine(n)
+      case (_, _)   => ???
+    }
+
+  def NextAction[_: P]: P[Action] = P(
     cursorAbsoluteCSI
     | cursorCSI
+    | clear
     | xOSC
     | SGR
     | BEL
     | toggleLatex
-    | SpecialCharacters
+    | specialCharacters
+    | cursorHistory
     | AnyChar.!.map(str => Write(str(0))))
 }

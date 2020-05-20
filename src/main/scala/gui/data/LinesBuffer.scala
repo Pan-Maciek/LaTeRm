@@ -11,7 +11,29 @@ import config.UiConfig
   * Note that function write should be rewritten so that it handles only standard characters write
   * We have to synchronize on  _mask and _lines
   */
-case class LinesBuffer(val width: IntegerProperty, val height: IntegerProperty) {
+case class LinesBuffer(width: IntegerProperty, height: IntegerProperty) {
+
+  def eraseInLine(n: Int): Unit = {
+    n match {
+      // TODO
+      case 0 => ??? // replace everything from cursor to end of the line with whitespace, does not change cursor position
+      case 1 => ??? // replace everything from cursor to start of the line with whitespace, does not change cursor position
+      case 2 => ??? // replace whole line with whitespace, dose not change cursor position
+      case _ =>     // ignore invalid argument
+    }
+  }
+
+  def eraseInDisplay(n: Int): Unit =
+    n match {
+      // TODO
+      case 0 => ??? // replace everything from cursor to the end of the screen with whitespace, dose not change cursor position
+      case 1 => ??? // replace everything from cursor to the start of the screen, does not change cursor position
+      case 2 => ??? // replace whole screen with whitespace, on DOS based systems move cursor to the most top left
+      case 3 => ??? // replace whole screen with whitespace, remove all lines saved in scroll-back buffer
+      case _ =>     // ignore invalid argument
+    }
+
+
   val cursor: Cursor             = Cursor(width, height)
   var myBufferMaxLinesCount: Int = LinesBuffer.DEFAULT_MAX_LINES_COUNT
 

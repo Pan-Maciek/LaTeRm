@@ -5,10 +5,23 @@ import scalafx.beans.property.IntegerProperty
 
 import scala.math._
 
-case class Cursor(val width: IntegerProperty, val height: IntegerProperty) {
+case class Cursor(width: IntegerProperty, height: IntegerProperty) {
+
   var style: Style = Style.default
   var x            = 0
+  var savedX       = 0
   var y            = 0
+  var savedY       = 0
+
+  def savePosition() = {
+    savedX = x
+    savedY = y
+  }
+
+  def restorePosition() = {
+    x = savedX
+    y = savedY
+  }
 
   def translate(offsetX: Int, offsetY: Int): Unit = {
     x = max(0, min(width.value, x + offsetX))

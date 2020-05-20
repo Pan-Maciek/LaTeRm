@@ -39,15 +39,18 @@ object DrawableInstances {
   }
 
   implicit class TerminalLineOps(line: TerminalLine) extends Drawable[TerminalLine] {
-    override def width: Double  = 0 // blocks.foldLeft(0.0)(_ + _.width)
+    override def width: Double  = line.blocksSeq().foldLeft(0.0)(_ + _.width)
     override def height: Double = line.blocksSeq().map(_.height).max
 
     def draw(implicit gc: GraphicsContext): Unit = {
       if (!line.isEmpty) {
         gc.save()
+        val H = height
         for (block <- line.blocksSeq()) {
+          val h = (H - block.height) / 2
+          gc.translate(0, h)
           block.draw
-          gc.translate(block.width, 0)
+          gc.translate(block.width, -h)
         }
         gc.restore()
       }

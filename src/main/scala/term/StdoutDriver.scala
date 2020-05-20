@@ -25,6 +25,7 @@ case class StdoutDriver(
         case Bell => ??? // play bell sound
         case SaveCursorPosition => linesBuffer.cursor.savePosition()
         case RestoreCursorPosition => linesBuffer.cursor.restorePosition()
+        case SetCursorVisibility(visible) => linesBuffer.cursor.setVisibility(visible)
       }
     }
   })

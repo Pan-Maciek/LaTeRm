@@ -12,16 +12,21 @@ case class Cursor(width: IntegerProperty, height: IntegerProperty) {
   var savedX       = 0
   var y            = 0
   var savedY       = 0
+  var visible      = false
 
-  def savePosition() = {
+  def savePosition(): Unit = {
     savedX = x
     savedY = y
   }
 
-  def restorePosition() = {
+  def restorePosition(): Unit = {
     x = savedX
     y = savedY
   }
+
+  def setVisibility(visible: Boolean): Unit =
+    this.visible = visible
+
 
   def translate(offsetX: Int, offsetY: Int): Unit = {
     x = max(0, min(width.value, x + offsetX))

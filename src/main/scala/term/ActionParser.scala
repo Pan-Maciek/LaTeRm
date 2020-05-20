@@ -12,6 +12,7 @@ case class SetStyle(sgr: Seq[Int]) extends Action
 case class MoveCursor(x: Int, y: Int) extends Action
 case class SetColumn(col: Int) extends Action
 case class SetCursor(x: Int, y: Int) extends Action
+case class SetCursorVisibility(visible: Boolean) extends Action
 case class ClearDisplay(clearType: Int) extends Action
 case class ClearLine(clearType: Int) extends Action
 case object SaveCursorPosition extends Action
@@ -85,7 +86,15 @@ object ActionParser {
   def cursorAbsoluteCSI[_: P] =
     P(ESC ~ "[" ~ Parameter ~ "H").map {
       case x :: y :: Nil => SetCursor(x, y)
+      case x :: Nil      => SetCursor(x, 1)
       case _ => ???
+    }
+
+  def cursorShowHide[_: P] =
+    P(ESC ~ "[?25" ~ CharIn("hl")).map {
+      case "h" => SetCursorVisibility(true)
+      case "l" => SetCursorVisibility(false)
+      case _   => ???
     }
 
   def cursorHistory[_: P] =
@@ -112,6 +121,7 @@ object ActionParser {
     cursorAbsoluteCSI
     | cursorCSI
     | clear
+    | cursorShowHide
     | xOSC
     | SGR
     | BEL

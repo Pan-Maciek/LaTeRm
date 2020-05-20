@@ -23,19 +23,73 @@ case class LinesBuffer(val width: IntegerProperty, val height: IntegerProperty) 
   def modified: Boolean = _modified
 
   def write(char: Char): Unit = {
-    while (cursor.y >= _lines.size) {
-      synchronized {
+    synchronized {
+      while (cursor.y >= _lines.size) {
         _lines += (TerminalLine())
         _mask += true
         _modified = true
       }
+      _mask(cursor.y) = true
+      _lines(cursor.y).write(cursor.x, char, cursor.style)
+      cursor.x += 1
+      if (cursor.x == width.value) {
+        cursor.x = 0
+        cursor.y += 1
+      }
     }
-    synchronized { _mask(cursor.y) = true }
-    _lines(cursor.y).write(cursor.x, char, cursor.style)
-    cursor.x += 1
-    if (cursor.x == width.value) {
-      cursor.x = 0
-      cursor.y += 1
+  }
+
+  /**
+    * Removes all lines but one
+    */
+  def clearLines(): Unit = {
+    synchronized {
+      val toDrop = linesCount - 2
+      _mask.dropRightInPlace(toDrop)
+      _lines.dropRightInPlace(toDrop)
+      _modified = true
+    }
+  }
+
+  def clearLinesAboveCursor(): Unit = {
+    synchronized {
+      val y = cursor.y
+      _lines.dropInPlace(y)
+      _mask.dropInPlace(y)
+      _modified = true
+    }
+  }
+
+  def clearLinesBelowCursor(): Unit = {
+    synchronized {
+      val toDrop = linesCount - cursor.y
+      _lines.dropRightInPlace(toDrop)
+      _mask.dropRightInPlace(toDrop)
+      _modified = true
+    }
+  }
+
+  /**
+    * Clears line from cursor (inclusive) to right
+    */
+  def clearToRight(): Unit = {
+    synchronized {
+      val i    = cursor.y
+      val line = _lines(i)
+      line.deleteFrom(cursor.x)
+      _mask(i) = true
+    }
+  }
+
+  /**
+    * Clears start of the line up to the cursor (exclusive)
+    */
+  def clearToLeft(): Unit = {
+    synchronized {
+      val i    = cursor.y
+      val line = _lines(i)
+      line.deleteTo(cursor.x)
+      _mask(i) = true
     }
   }
 

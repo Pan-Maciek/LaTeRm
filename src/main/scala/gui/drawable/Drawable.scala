@@ -3,15 +3,19 @@ package gui.drawable
 import java.awt.Color
 import java.awt.image.BufferedImage
 
-import gui.data.TerminalLine
 import javafx.embed.swing.SwingFXUtils
 import javafx.geometry.Bounds
 import javax.swing.JLabel
-import org.scilab.forge.jlatexmath.{TeXConstants, TeXFormula}
 import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.text.{Font, Text}
+import scalafx.scene.paint.{Color => ColorFX}
+
+import org.scilab.forge.jlatexmath.{TeXConstants, TeXFormula}
 
 import scala.Ordering.Double.TotalOrdering
+import scala.language.implicitConversions
+
+import gui.data.TerminalLine
 
 trait Drawable[A] {
   def draw(implicit graphicsContext: GraphicsContext): Unit
@@ -22,9 +26,18 @@ trait Drawable[A] {
 object Drawable {
   def draw[A: Drawable](graphicsContext: GraphicsContext): Unit =
     implicitly[Drawable[A]].draw(graphicsContext)
+
 }
 
 object DrawableInstances {
+  implicit def colorConversion(color: ColorFX): Color = {
+    val r = (color.red * 255).toInt
+    val g = (color.green * 255).toInt
+    val b = (color.blue * 255).toInt
+
+    new Color(r, g, b)
+  }
+
   implicit class TerminalLineOps(line: TerminalLine) extends Drawable[TerminalLine] {
     override def width: Double  = line.blocksSeq().foldLeft(0.0)(_ + _.width)
     override def height: Double = line.blocksSeq().map(_.height).max
@@ -33,7 +46,8 @@ object DrawableInstances {
       if (!line.isEmpty) {
         val H = height
         gc.save()
-        for (block <- line.blocksSeq()) {
+        for (block <- line.blocksSeq();
+             if block.len() > 0) {
           val h = (H - block.height) / 2
           gc.translate(0, h)
           block.draw
@@ -66,9 +80,10 @@ object DrawableInstances {
       gc.fillRect(0, 0, width, height)
       if (style.latexRendering) {
         val jl = new JLabel()
-        val img = new BufferedImage(icon.getIconWidth, icon.getIconHeight, BufferedImage.TYPE_INT_RGB)
+        val img =
+          new BufferedImage(icon.getIconWidth, icon.getIconHeight, BufferedImage.TYPE_INT_RGB)
         val g2 = img.createGraphics()
-        jl.setForeground(new Color((style.foreground.getRed * 255).toInt, (style.foreground.getGreen * 255).toInt, (style.foreground.getBlue * 255).toInt))
+        jl.setForeground(style.foreground)
         icon.paintIcon(jl, g2, 0, 0)
         gc.drawImage(SwingFXUtils.toFXImage(img, null), 0, 0)
       } else {

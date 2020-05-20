@@ -18,8 +18,8 @@ class TerminalPanel() extends Canvas {
   def title: StringProperty = terminal.title
 
   def drawBlank(): Unit = {
-      gc.fill = Color.Black
-      gc.fillRect(0, 0, width.get, height.get)
+    gc.fill = Color.Black
+    gc.fillRect(0, 0, width.get, height.get)
   }
 
   gc.textBaseline = VPos.Top
@@ -53,7 +53,15 @@ class TerminalPanel() extends Canvas {
   height.onChange { (_, _, _) => { redraw() } }
 
   val timer = new Timer()
-  val task  = new TimerTask { def run() = partialDraw() }
+  val task = new TimerTask {
+    def run() = {
+      if (terminal.modified) {
+        redraw()
+      } else {
+        partialDraw()
+      }
+    }
+  }
   timer.schedule(task, 500L, UiConfig.updatePeriod)
 
   onKeyTyped = e => terminal.write(e.getCharacter.codePointAt(0))

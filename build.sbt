@@ -33,3 +33,6 @@ scalacOptions ++= Seq(
   "-deprecation",
   "-Xfatal-warnings"
 )
+
+// force to use separate jvm for sbt
+fork in run := true

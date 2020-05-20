@@ -1,8 +1,8 @@
 package config
 
 object UiConfig {
-  val width  = 650.0
-  val height = 450.0
+  val width  = 850.0
+  val height = 650.0
 
   val DefaultLineHeight = 15
 

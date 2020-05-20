@@ -32,3 +32,5 @@ build
 *.class
 .metals
 .bloop
+
+.vscode

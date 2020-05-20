@@ -11,6 +11,7 @@ case class SetStyle(val sgr: Seq[Int])
 case class MoveCursor(val x: Int, val y: Int)
 case class SetColumn(val col: Int)
 case class SetCursor(val x: Int, val y: Int)
+case object ToggleLatex
 
 object ActionParser {
   def parse(input: InputStream): Iterator[Any] = new Iterator[Any] {
@@ -68,7 +69,7 @@ object ActionParser {
       case _ => "Not Implemented"
     }
 
-  def foo[_: P] =
+  def SpecialCharacters[_: P] =
     P(CharIn("\n\r\b").!).map {
       case "\n" => MoveCursor(Int.MinValue, 1)
       case "\r" => SetColumn(1)
@@ -84,12 +85,16 @@ object ActionParser {
   def SGR[_: P]: P[SetStyle] =
     P(ESC ~ "[" ~ Parameter ~ "m").map(SetStyle)
 
+  def toggleLatex[_: P] =
+    P(ESC ~ "[Z").map(_ => ToggleLatex)
+
   def NextAction[_: P] = P(
     cursorAbsoluteCSI
-    | foo
     | cursorCSI
     | xOSC
     | SGR
     | BEL
+    | toggleLatex
+    | SpecialCharacters
     | AnyChar.!.map(str => Write(str(0))))
 }

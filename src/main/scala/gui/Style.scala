@@ -16,6 +16,8 @@ case class Style (
   val latexRendering: Boolean,
   val bold: Boolean
 ) {
+  def toggleLatex: Style = copy(latexRendering = !latexRendering)
+
   def applySgr(sgr: Seq[Int]): Style =
     applySgr(this, sgr)
 

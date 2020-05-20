@@ -21,6 +21,7 @@ case class StdoutDriver(
         case MoveCursor(x, y) => linesBuffer.cursor.translate(x, y)
         case SetColumn(n)     => linesBuffer.cursor.setColumn(n)
         case SetCursor(x, y)  => linesBuffer.cursor.setPosition(x, y)
+        case ToggleLatex      => linesBuffer.cursor.style = linesBuffer.cursor.style.toggleLatex
         case _                => println(action)
       }
     }

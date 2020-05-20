@@ -28,14 +28,18 @@ case class Style (
 
       case fg :: tail if 30 <= fg && fg <= 37 =>
         applySgr(style copy (foreground = Style.foreground4bit(fg)), tail)
+      case fg :: tail if 90 <= fg && fg <= 97 =>
+        applySgr(style copy (foreground = Style.foreground4bit(fg)), tail)
       case 38 :: 5 :: n :: tail =>
         applySgr(style, tail)
       case 38 :: 2 :: r :: g :: b :: tail =>
         applySgr(style copy (foreground = Color.rgb(r, g, b)), tail)
       case 39 :: tail =>
-        applySgr(style copy (foreground = Style.default.foreground), tail) // default fg color
+        applySgr(style copy (foreground = Style.default.foreground), tail)
 
       case bg :: tail if 30 <= bg && bg <= 47 =>
+        applySgr(style copy (background = Style.background4bit(bg)), tail)
+      case bg :: tail if 100 <= bg && bg <= 107 =>
         applySgr(style copy (background = Style.background4bit(bg)), tail)
       case 48 :: 5 :: n :: tail =>
         applySgr(style, tail)

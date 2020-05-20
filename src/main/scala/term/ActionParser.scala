@@ -91,7 +91,7 @@ object ActionParser {
     }
 
   def cursorShowHide[_: P] =
-    P(ESC ~ "[?25" ~ CharIn("hl")).map {
+    P(ESC ~ "[?25" ~ CharIn("hl").!).map {
       case "h" => SetCursorVisibility(true)
       case "l" => SetCursorVisibility(false)
       case _   => ???

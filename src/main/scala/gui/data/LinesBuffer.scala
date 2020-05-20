@@ -92,11 +92,11 @@ case class LinesBuffer(width: IntegerProperty, height: IntegerProperty) {
     }
   }
 
-  private def eraseLine(i: Int): Unit = {
-    for (i <- Range(0, _lines(i).len)) {
-      _lines(i).write(i, ' ', cursor.style)
+  private def eraseLine(lineNo: Int): Unit = {
+    for (i <- Range(0, _lines(lineNo).len)) {
+     _lines(lineNo).write(i, ' ', cursor.style)
     }
-    _mask(i) = true
+    _mask(lineNo) = true
   }
 
   private def appendBlankLines(): Unit = {

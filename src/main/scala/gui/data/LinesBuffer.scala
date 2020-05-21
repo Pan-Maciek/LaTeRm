@@ -13,14 +13,33 @@ import config.{SystemConstants, UiConfig, Windows}
   */
 case class LinesBuffer(width: IntegerProperty, height: IntegerProperty) {
 
+  // Cursor's x, y, width, height
+  def cursorCoords: (Double, Double, Double, Double) = {
+    synchronized {
+      var i          = 0
+      val cursorLine = _lines(cursor.y)
+      var cursorY    = 0.0
+
+      while (i < cursor.y) {
+        cursorY += _lines(i).height
+        i += 1
+      }
+      val cursorX = cursorLine.widthTo(cursor.x)
+      (cursorX, cursorY, 10.0, 15.0)
+    }
+  }
+
   def eraseInLine(n: Int): Unit = {
     synchronized {
       appendBlankLines()
       n match {
         // TODO
-        case 0 => eraseFromCursorToLineEnd() // replace everything from cursor to end of the line with whitespace, does not change cursor position
-        case 1 => eraseFromLineStartToCursor() // replace everything from cursor to start of the line with whitespace, does not change cursor position
-        case 2 => eraseWholeLine() // replace whole line with whitespace, dose not change cursor position
+        case 0 =>
+          eraseFromCursorToLineEnd() // replace everything from cursor to end of the line with whitespace, does not change cursor position
+        case 1 =>
+          eraseFromLineStartToCursor() // replace everything from cursor to start of the line with whitespace, does not change cursor position
+        case 2 =>
+          eraseWholeLine() // replace whole line with whitespace, dose not change cursor position
         case _ => // ignore invalid argument
       }
 
@@ -54,10 +73,14 @@ case class LinesBuffer(width: IntegerProperty, height: IntegerProperty) {
       _modified = true
       appendBlankLines()
       n match {
-        case 0 => eraseFromCursorToEnd() // replace everything from cursor to the end of the screen with whitespace, dose not change cursor position
-        case 1 => eraseFromTopToCursor()// replace everything from cursor to the start of the screen, does not change cursor position
-        case 2 => eraseAllAndSetCursor()  // replace whole screen with whitespace, on DOS based systems move cursor to the most top left
-        case 3 => eraseAll() // replace whole screen with whitespace, remove all lines saved in scroll-back buffer
+        case 0 =>
+          eraseFromCursorToEnd() // replace everything from cursor to the end of the screen with whitespace, dose not change cursor position
+        case 1 =>
+          eraseFromTopToCursor() // replace everything from cursor to the start of the screen, does not change cursor position
+        case 2 =>
+          eraseAllAndSetCursor() // replace whole screen with whitespace, on DOS based systems move cursor to the most top left
+        case 3 =>
+          eraseAll() // replace whole screen with whitespace, remove all lines saved in scroll-back buffer
         case _ => // ignore invalid argument
       }
     }
@@ -94,7 +117,7 @@ case class LinesBuffer(width: IntegerProperty, height: IntegerProperty) {
 
   private def eraseLine(lineNo: Int): Unit = {
     for (i <- Range(0, _lines(lineNo).len)) {
-     _lines(lineNo).write(i, ' ', cursor.style)
+      _lines(lineNo).write(i, ' ', cursor.style)
     }
     _mask(lineNo) = true
   }

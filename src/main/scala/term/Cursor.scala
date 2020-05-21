@@ -4,15 +4,17 @@ import gui.Style
 import scalafx.beans.property.IntegerProperty
 
 import scala.math._
+import scalafx.scene.input.KeyCode.D
 
 case class Cursor(width: IntegerProperty, height: IntegerProperty) {
 
-  var style: Style = Style.default
-  var x            = 0
-  var savedX       = 0
-  var y            = 0
-  var savedY       = 0
-  var visible      = false
+  var style: Style                                 = Style.default
+  var x                                            = 0
+  var savedX                                       = 0
+  var y                                            = 0
+  var savedY                                       = 0
+  var visible                                      = false
+  var viewCoords: (Double, Double, Double, Double) = _
 
   def savePosition(): Unit = {
     savedX = x
@@ -26,7 +28,6 @@ case class Cursor(width: IntegerProperty, height: IntegerProperty) {
 
   def setVisibility(visible: Boolean): Unit =
     this.visible = visible
-
 
   def translate(offsetX: Int, offsetY: Int): Unit = {
     x = max(0, min(width.value, x + offsetX))

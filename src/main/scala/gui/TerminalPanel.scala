@@ -3,13 +3,17 @@ package gui
 import scalafx.scene.layout.StackPane
 import gui.Screen
 import gui.drawable.CursorView
+import term.Cursor
 import java.{util => ju}
 import config.UiConfig
+import scalafx.scene.layout.Pane
+import scalafx.scene.Group
 
-class TerminalPanel extends StackPane {
-  val screen     = new Screen()
-  val cursorView = new CursorView(screen.terminal.cursor)
-  val terminal   = screen.terminal
+class TerminalPanel extends Group {
+  val screen       = new Screen()
+  val terminal     = screen.terminal
+  val curs: Cursor = terminal.cursor
+  val cursorView   = new CursorView(curs)
 
   children.addAll(screen, cursorView)
 
@@ -21,6 +25,7 @@ class TerminalPanel extends StackPane {
       } else {
         screen.partialDraw()
       }
+      curs.viewCoords = terminal.cursorPosition
       cursorView.onUpdate()
     }
   }

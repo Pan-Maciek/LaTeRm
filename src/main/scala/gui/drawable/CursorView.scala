@@ -6,7 +6,7 @@ import scalafx.scene.paint.Color
 import scalafx.beans.property.DoubleProperty
 import config.UiConfig
 
-class CursorView(cursor: Cursor) extends Rectangle {
+class CursorView(curs: Cursor) extends Rectangle {
   // Todo implement blinking and
   var _blink   = false
   var _counter = 0
@@ -15,8 +15,12 @@ class CursorView(cursor: Cursor) extends Rectangle {
   fill_=(Color.White)
 
   def onUpdate(): Unit = {
-    x_=(cursor.x)
-    y_=(cursor.y * UiConfig.DefaultLineHeight)
+    val (newX, newY, w, h) = curs.viewCoords
+    translateX_=(newX)
+    translateY_=(newY)
+    width_=(w)
+    height_=(h)
+
     flip()
   }
 
@@ -24,9 +28,9 @@ class CursorView(cursor: Cursor) extends Rectangle {
     _blink = !_blink
     _counter += 1
     fill_=(if (_blink) {
-      Color.BlueViolet
+      Color.White
     } else {
-      Color.Green
+      Color.Black
     })
   }
 

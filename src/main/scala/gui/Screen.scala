@@ -30,7 +30,7 @@ class Screen() extends Canvas {
     drawBlank()
 
     gc.save()
-    gc.translate(0, UiConfig.DefaultLineHeight)
+    // gc.translate(0, UiConfig.DefaultLineHeight)
     for (line <- terminal.lines) {
       line.draw
       gc.translate(0, line.height)
@@ -40,7 +40,7 @@ class Screen() extends Canvas {
 
   def partialDraw(): Unit = {
     gc.save()
-    gc.translate(0, UiConfig.DefaultLineHeight)
+    // gc.translate(0, UiConfig.DefaultLineHeight)
     for ((line, changed) <- terminal.changedLines) {
       if (changed) {
         gc.fill = Color.Black

@@ -56,6 +56,26 @@ object DrawableInstances {
       }
     }
 
+    def widthTo(column: Int): Double = {
+      // for some reason cursor can be at line.len??
+      if (column >= line.len) {
+        return width
+      }
+
+      val blocks = line.blocksSeq()
+
+      var i     = 0
+      var x     = 0.0
+      var block = blocks(i)
+      while (!(block.from <= column && block.to < column)) {
+        x += block.width
+        i += 1
+        block = blocks(i)
+      }
+
+      x + block.widthTo(column - block.from)
+    }
+
   }
 
   implicit class BlockOps(block: TerminalLine#Block) extends Drawable[TerminalLine#Block] {
@@ -72,6 +92,8 @@ object DrawableInstances {
 
     def width: Double  = if (style.latexRendering) icon.getIconWidth else bounds.getWidth
     def height: Double = if (style.latexRendering) icon.getIconHeight else bounds.getHeight
+
+    def widthTo(i: Int): Double = width / block.len() * i
 
     def draw(implicit gc: GraphicsContext): Unit = {
       gc.font = Font.default

@@ -30,11 +30,11 @@ class Terminal {
 
   private val linesBuffer = LinesBuffer(width, height)
 
-  def lines: Seq[TerminalLine]                   = linesBuffer.lastLines
-  def changedLines: Seq[(TerminalLine, Boolean)] = linesBuffer.lastLinesChanged
-  def cursor: Cursor                             = linesBuffer.cursor
-  def modified: Boolean                          = linesBuffer.modified
-  def cursorPosition: (Double, Double)           = ???
+  def lines: Seq[TerminalLine]                         = linesBuffer.lastLines
+  def changedLines: Seq[(TerminalLine, Boolean)]       = linesBuffer.lastLinesChanged
+  def cursor: Cursor                                   = linesBuffer.cursor
+  def modified: Boolean                                = linesBuffer.modified
+  def cursorPosition: (Double, Double, Double, Double) = linesBuffer.cursorCoords
 
   val driver = StdoutDriver(this, linesBuffer, stdout)
 }

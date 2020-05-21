@@ -25,6 +25,8 @@ case class Style (
   private def applySgr(style: Style, sgr: Seq[Int]): Style = {
     sgr match {
       case Nil => style
+      case 7 :: tail =>
+        applySgr(style copy (foreground = style.background, background = style.foreground), tail)
 
       case fg :: tail if 30 <= fg && fg <= 37 =>
         applySgr(style copy (foreground = Style.foreground4bit(fg)), tail)

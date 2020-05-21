@@ -85,8 +85,8 @@ object ActionParser {
 
   def cursorAbsoluteCSI[_: P] =
     P(ESC ~ "[" ~ Parameter ~ "H").map {
-      case x :: y :: Nil => SetCursor(x, y)
-      case x :: Nil      => SetCursor(x, 1)
+      case y :: x :: Nil => SetCursor(y, x)
+      case y :: Nil      => SetCursor(y, 1)
       case _ => ???
     }
 

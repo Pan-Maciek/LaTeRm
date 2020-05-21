@@ -34,9 +34,9 @@ case class Cursor(width: IntegerProperty, height: IntegerProperty) {
     y = max(0, min(height.value, y + offsetY))
   }
 
-  def setPosition(col: Int, row: Int): Unit = {
+  def setPosition(row: Int, col: Int): Unit = {
     x = max(0, min(width.value, col - 1))
-    y = max(0, min(height.value, row - 1))
+    y = max(0, row - 1)
   }
 
   def setColumn(col: Int): Unit =

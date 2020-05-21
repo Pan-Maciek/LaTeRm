@@ -10,23 +10,23 @@ class CursorView(curs: Cursor) extends Rectangle {
   // Todo implement blinking and
   var _blink   = false
   var _counter = 0
-  width_=(7.0)
-  height_=(UiConfig.DefaultLineHeight)
-  fill_=(Color.White)
+  width = 7.0
+  height = UiConfig.DefaultLineHeight
+  fill = Color.White
 
   def onUpdate(): Unit = {
     val (newX, newY, w, h) = curs.viewCoords
-    translateX_=(newX)
-    translateY_=(newY)
-    width_=(w)
-    height_=(h)
+    translateX = newX
+    translateY = newY
+    width = w
+    height = h
 
-    flip()
+    if (_counter % 10 == 0) flip()
+    _counter += 1
   }
 
   private def flip(): Unit = {
     _blink = !_blink
-    _counter += 1
     fill_=(if (_blink) {
       Color.White
     } else {

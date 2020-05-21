@@ -18,8 +18,6 @@ class Screen() extends Canvas {
   val terminal              = new Terminal
   def title: StringProperty = terminal.title
 
-  private var _blink = false
-
   def drawBlank(): Unit = {
     gc.fill = Color.Black
     gc.fillRect(0, 0, width.get, height.get)
@@ -55,5 +53,5 @@ class Screen() extends Canvas {
   width.onChange { (_, _, _) => { redraw() } }
   height.onChange { (_, _, _) => { redraw() } }
 
-  onKeyTyped = e => terminal.write(e.getCharacter.codePointAt(0))
+  onKeyTyped = e => terminal.write(e.getCharacter.getBytes)
 }

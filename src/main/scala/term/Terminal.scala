@@ -2,7 +2,7 @@ package term
 
 import java.io.{InputStream, OutputStream}
 
-import com.pty4j.PtyProcess
+import com.pty4j.{PtyProcess, WinSize}
 import config.SystemConstants
 import gui.data.{LinesBuffer, TerminalLine}
 import scalafx.beans.property.{IntegerProperty, StringProperty}
@@ -18,7 +18,7 @@ class Terminal {
   private val stdin: OutputStream = pty.getOutputStream
   private val stdout: InputStream = pty.getInputStream
 
-  def write(char: Int): Unit = stdin.write(char)
+  def write(char: Array[Byte]): Unit = stdin.write(char)
 
   val title = new StringProperty(this, "title", "LaTeRm")
   val width: IntegerProperty = new IntegerProperty(this, "width", 100) {

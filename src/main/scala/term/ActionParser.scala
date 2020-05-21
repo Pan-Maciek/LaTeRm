@@ -91,7 +91,7 @@ object ActionParser {
     }
 
   def cursorShowHide[_: P] =
-    P(ESC ~ "[?25" ~ CharIn("hl").!).map {
+    P(ESC ~ "[" ~ "?25" ~ CharIn("hl").!).map {
       case "h" => SetCursorVisibility(true)
       case "l" => SetCursorVisibility(false)
       case _   => ???
@@ -108,13 +108,20 @@ object ActionParser {
     P(ESC ~ "[" ~ Parameter ~ "m").map(SetStyle)
 
   def toggleLatex[_: P] =
-    P(ESC ~ "[Z").map(_ => ToggleLatex)
+    P(ESC ~ "[" ~ "Y").map(_ => ToggleLatex)
 
   def clear[_: P] =
     P(ESC ~ "[" ~ Number(0) ~ CharIn("JK").!).map {
       case (n, "J") => ClearDisplay(n)
       case (n, "K") => ClearLine(n)
       case (_, _)   => ???
+    }
+
+  def oldSchoolCursor[_: P] =
+    P(ESC ~ CharIn("78").!).map {
+      case "7" => println("save"); SaveCursorPosition
+      case "8" => println("restore"); RestoreCursorPosition
+      case _ => ???
     }
 
   def NextAction[_: P]: P[Action] = P(
@@ -127,6 +134,8 @@ object ActionParser {
     | BEL
     | toggleLatex
     | specialCharacters
+    | cursorShowHide
     | cursorHistory
+    | oldSchoolCursor
     | AnyChar.!.map(str => Write(str(0))))
 }

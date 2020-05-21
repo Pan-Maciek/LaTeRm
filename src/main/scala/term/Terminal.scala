@@ -34,6 +34,7 @@ class Terminal {
   def changedLines: Seq[(TerminalLine, Boolean)] = linesBuffer.lastLinesChanged
   def cursor: Cursor                             = linesBuffer.cursor
   def modified: Boolean                          = linesBuffer.modified
+  def cursorPosition: (Double, Double)           = ???
 
   val driver = StdoutDriver(this, linesBuffer, stdout)
 }

@@ -3,18 +3,17 @@ package gui.drawable
 import java.awt.Color
 import java.awt.image.BufferedImage
 
+import config.UiConfig
 import javafx.embed.swing.SwingFXUtils
 import javafx.geometry.Bounds
 import javax.swing.JLabel
 import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.text.{Font, Text}
 import scalafx.scene.paint.{Color => ColorFX}
-
 import org.scilab.forge.jlatexmath.{TeXConstants, TeXFormula}
 
 import scala.Ordering.Double.TotalOrdering
 import scala.language.implicitConversions
-
 import gui.data.TerminalLine
 
 trait Drawable[A] {
@@ -40,7 +39,9 @@ object DrawableInstances {
 
   implicit class TerminalLineOps(line: TerminalLine) extends Drawable[TerminalLine] {
     override def width: Double  = line.blocksSeq().foldLeft(0.0)(_ + _.width)
-    override def height: Double = line.blocksSeq().map(_.height).max
+    override def height: Double =
+      if (line.isEmpty) UiConfig.DefaultLineHeight
+      else line.blocksSeq().map(_.height).max
 
     def draw(implicit gc: GraphicsContext): Unit = {
       if (!line.isEmpty) {

@@ -20,6 +20,7 @@ case object SaveCursorPosition extends Action
 case object RestoreCursorPosition extends Action
 case object ToggleLatex extends Action
 case object Bell extends Action
+case class Warn(cause: Any) extends Action
 
 object ActionParser {
   def parse(input: InputStream): Iterator[Action] = new Iterator[Action] {

@@ -27,6 +27,7 @@ case class StdoutDriver(
         case SaveCursorPosition    => linesBuffer.cursor.savePosition()
         case RestoreCursorPosition => linesBuffer.cursor.restorePosition()
         case SetCursorVisibility(visible) => linesBuffer.cursor.setVisibility(visible)
+        case Warn(cause)           => println(cause)
       }
       }
     }

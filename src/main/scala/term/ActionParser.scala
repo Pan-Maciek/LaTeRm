@@ -57,7 +57,7 @@ object ActionParser {
   def Intermediate[_: P]: P[String] =
     P(CharIn(" -/").rep(0).!)
 
-  def ESC[_: P]: P[Unit] = P("\u001b")
+  def ESC[_: P]: P[Unit] = P(CharIn("\u001b\u088e"))
   def BEL[_: P]          = P("\u0007").map(_ => Bell) // Bell, Alert
   def ST[_: P]           = P("\u009c") // String Terminator
 

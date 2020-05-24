@@ -125,7 +125,8 @@ object ActionParser {
       case _   => Ignore
     }
 
-  def ignored[_: P] = P(CharIn("0-9").rep(0) ~ "h").map(_ => Ignore)
+  def ignored1[_: P] = P(CharIn("0-9").rep(0) ~ "h").map(_ => Ignore)
+  def ignored2[_: P] = P(CharIn("0-9").rep(1) ~ " q").map(_ => Ignore)
 
   def parser[_: P] = P(
     "\u001b" ~ (
@@ -136,9 +137,10 @@ object ActionParser {
         | toggleLatex
         | cursorHistory
         | SGR
+        | ignored2
         | ("?" ~ (
           cursorShowHide
-          | ignored ))
+          | ignored1 ))
         ))
       | ( "]" ~ xOSC)
       | "=".!.map(_ => Ignore)

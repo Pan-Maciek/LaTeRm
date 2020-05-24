@@ -51,8 +51,8 @@ object ActionParser {
       case x  => x.toInt
     })
 
-  def Parameter[_: P]: P[Seq[Int]] =
-    P(Number(1).rep(sep = ";"))
+  def Parameter[_: P](defaultValue: Int): P[Seq[Int]] =
+    P(Number(defaultValue).rep(sep = ";"))
   def Intermediate[_: P]: P[String] =
     P(CharIn(" -/").rep(0).!)
 
@@ -63,7 +63,7 @@ object ActionParser {
   def xOSC[_: P] =
     P(ESC ~ "]" ~ CharPred(_ != '\u0007').rep.! ~ "\u0007").map { // Operating System Command (xterm)
       case s"0;$title" => SetTitle(title)
-      case _           => ???
+      case other       => Warn(other)
     }
 
   def cursorCSI[_: P] =
@@ -86,7 +86,7 @@ object ActionParser {
     }
 
   def cursorAbsoluteCSI[_: P] =
-    P(ESC ~ "[" ~ Parameter ~ "H").map {
+    P(ESC ~ "[" ~ Parameter(1) ~ "H").map {
       case y :: x :: Nil => SetCursor(y, x)
       case y :: Nil      => SetCursor(y, 1)
       case _ => ???
@@ -107,7 +107,7 @@ object ActionParser {
     }
 
   def SGR[_: P]: P[SetStyle] =
-    P(ESC ~ "[" ~ Parameter ~ "m").map(SetStyle)
+    P(ESC ~ "[" ~ Parameter(0) ~ "m").map(SetStyle)
 
   def toggleLatex[_: P] =
     P(ESC ~ "[" ~ "Y").map(_ => ToggleLatex)
@@ -121,8 +121,8 @@ object ActionParser {
 
   def oldSchoolCursor[_: P] =
     P(ESC ~ CharIn("78").!).map {
-      case "7" => println("save"); SaveCursorPosition
-      case "8" => println("restore"); RestoreCursorPosition
+      case "7" => SaveCursorPosition
+      case "8" => RestoreCursorPosition
       case _ => ???
     }
 

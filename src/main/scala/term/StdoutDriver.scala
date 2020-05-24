@@ -14,6 +14,7 @@ case class StdoutDriver(
     for (action <- ActionParser.parse(input)) {
       linesBuffer.synchronized {
         action match {
+          case Write('\uFFFF')              => System.exit(0)
           case Write(char)                  => linesBuffer.write(char)
           case SetTitle(title)              => runLater(() => terminal.title.set(title))
           case SetStyle(sgr)                => linesBuffer.cursor.style = linesBuffer.cursor.style.applySgr(sgr)

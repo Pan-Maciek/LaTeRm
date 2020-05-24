@@ -1,15 +1,13 @@
 package gui
 
-import java.util.{Timer, TimerTask}
-
-import scalafx.scene.canvas.Canvas
-import term.Terminal
 import config.UiConfig
-import scalafx.application.Platform
-import scalafx.scene.paint.Color
-import scalafx.beans.property.StringProperty
 import gui.drawable.DrawableInstances._
+import javafx.scene.input.KeyCode.{DOWN, LEFT, RIGHT, UP}
+import scalafx.beans.property.StringProperty
 import scalafx.geometry.VPos
+import scalafx.scene.canvas.Canvas
+import scalafx.scene.paint.Color
+import term.Terminal
 
 class Screen() extends Canvas {
   implicit val gc = graphicsContext2D
@@ -28,7 +26,6 @@ class Screen() extends Canvas {
     drawBlank()
 
     gc.save()
-    // gc.translate(0, UiConfig.DefaultLineHeight)
     for (line <- terminal.lines) {
       line.draw
       gc.translate(0, line.height)
@@ -38,7 +35,6 @@ class Screen() extends Canvas {
 
   def partialDraw(): Unit = {
     gc.save()
-    // gc.translate(0, UiConfig.DefaultLineHeight)
     for ((line, changed) <- terminal.changedLines) {
       if (changed) {
         gc.fill = Color.Black
@@ -54,4 +50,12 @@ class Screen() extends Canvas {
   height.onChange { (_, _, _) => { redraw() } }
 
   onKeyTyped = e => terminal.write(e.getCharacter.getBytes)
+  onKeyPressed =
+    _.getCode match {
+      case UP     => terminal.write("\u001b[A".getBytes)
+      case DOWN   => terminal.write("\u001b[B".getBytes)
+      case RIGHT  => terminal.write("\u001b[C".getBytes)
+      case LEFT   => terminal.write("\u001b[D".getBytes)
+      case _ =>
+    }
 }

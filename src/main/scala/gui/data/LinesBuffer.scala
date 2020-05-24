@@ -16,6 +16,9 @@ case class LinesBuffer(width: IntegerProperty, height: IntegerProperty) {
   // Cursor's x, y, width, height
   def cursorCoords: (Double, Double, Double, Double) = {
     synchronized {
+      // hot fix
+      appendBlankLines()
+
       var i          = 0
       val cursorLine = _lines(cursor.y)
       var cursorY    = 0.0

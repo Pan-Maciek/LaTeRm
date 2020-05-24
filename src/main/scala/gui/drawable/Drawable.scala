@@ -61,7 +61,6 @@ object DrawableInstances {
       if (column >= line.len)
         return width
       val blocks = line.blocksSeq()
-      // println(f"Calc: $column, ${line.len}")
 
       var i            = 0
       var pos          = 0
@@ -71,7 +70,6 @@ object DrawableInstances {
 
         pos += block.len
         runningWidth += block.widthTo(column)
-        // println(f"Pos: $pos, ${column}")
         i += 1
       }
 
@@ -114,11 +112,10 @@ object DrawableInstances {
       if (col >= block.to)
         return width
 
-      val from  = 0
-      val until = col - block.from
-      // println(f"Block: $from, $until, $col, ${block.from}")
+      val until   = col - block.from
       val textObj = new Text(block.text.substring(0, until))
 
+      textObj.setFont(UiConfig.font)
       textObj.getBoundsInLocal().getWidth()
     }
 

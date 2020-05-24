@@ -34,8 +34,7 @@ class TerminalPanel extends Group {
 
         cursorView.onUpdate()
       }
-
     }
   }
-  timer.schedule(task, 500L, UiConfig.updatePeriod)
+  timer.schedule(task, 750L, UiConfig.updatePeriod)
 }

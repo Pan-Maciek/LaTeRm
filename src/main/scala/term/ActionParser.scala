@@ -19,14 +19,15 @@ case class ClearLine(clearType: Int) extends Action
 case object SaveCursorPosition extends Action
 case object RestoreCursorPosition extends Action
 case object ToggleLatex extends Action
+case object Ignore extends Action
 case object Bell extends Action
 case class Warn(cause: Any) extends Action
 
 object ActionParser {
   def parse(input: InputStream): Iterator[Action] = new Iterator[Action] {
+    val reader = new InputStreamReader(input, StandardCharsets.UTF_8)
     val iter = new Iterator[String] {
       var _hasNext = true
-      val reader = new InputStreamReader(input, StandardCharsets.UTF_8)
       override def hasNext: Boolean = _hasNext
       override def next(): String   = {
         val char = reader.read
@@ -54,21 +55,19 @@ object ActionParser {
 
   def Parameter[_: P](defaultValue: Int): P[Seq[Int]] =
     P(Number(defaultValue).rep(sep = ";"))
-  def Intermediate[_: P]: P[String] =
-    P(CharIn(" -/").rep(0).!)
 
-  def ESC[_: P]: P[Unit] = P(CharIn("\u001b\u088e"))
-  def BEL[_: P]          = P("\u0007").map(_ => Bell) // Bell, Alert
-  def ST[_: P]           = P("\u009c") // String Terminator
+  def ESC[_: P] = P(CharIn("\u001b"))
+  def BEL[_: P] = P("\u0007").map(_ => Bell) // Bell, Alert
+  def ST[_: P]  = P("\u009c") // String Terminator
 
   def xOSC[_: P] =
-    P(ESC ~ "]" ~ CharPred(_ != '\u0007').rep.! ~ "\u0007").map { // Operating System Command (xterm)
+    P(CharPred(_ != '\u0007').rep.! ~ "\u0007").map { // Operating System Command (xterm)
       case s"0;$title" => SetTitle(title)
       case other       => Warn(other)
     }
 
   def cursorCSI[_: P] =
-    P(ESC ~ "[" ~ Number(1) ~ CharIn("A-G").!).map {
+    P(Number(1) ~ CharIn("A-G").!).map {
       case (n, "A") => MoveCursor(0, -n) // CCU
       case (n, "B") => MoveCursor(0,  n) // CUD
       case (n, "C") => MoveCursor(n,  0) // CUF
@@ -87,57 +86,70 @@ object ActionParser {
     }
 
   def cursorAbsoluteCSI[_: P] =
-    P(ESC ~ "[" ~ Parameter(1) ~ "H").map {
+    P(Parameter(1) ~ "H").map {
       case y :: x :: Nil => SetCursor(y, x)
       case y :: Nil      => SetCursor(y, 1)
       case _ => ???
     }
 
   def cursorShowHide[_: P] =
-    P(ESC ~ "[" ~ "?25" ~ CharIn("hl").!).map {
+    P("25" ~ CharIn("hl").!).map {
       case "h" => SetCursorVisibility(true)
       case "l" => SetCursorVisibility(false)
       case _   => ???
     }
 
   def cursorHistory[_: P] =
-    P(ESC ~ "[" ~ CharIn("su").!).map {
+    P(CharIn("su").!).map {
       case "s" => SaveCursorPosition
       case "u" => RestoreCursorPosition
       case _  => ???
     }
 
   def SGR[_: P]: P[SetStyle] =
-    P(ESC ~ "[" ~ Parameter(0) ~ "m").map(SetStyle)
+    P(Parameter(0) ~ "m").map(SetStyle)
 
-  def toggleLatex[_: P] =
-    P(ESC ~ "[" ~ "Y").map(_ => ToggleLatex)
+  def toggleLatex[_: P] = P("Y").map(_ => ToggleLatex)
 
   def clear[_: P] =
-    P(ESC ~ "[" ~ Number(0) ~ CharIn("JK").!).map {
+    P(Number(0) ~ CharIn("JK").!).map {
       case (n, "J") => ClearDisplay(n)
       case (n, "K") => ClearLine(n)
       case (_, _)   => ???
     }
 
   def oldSchoolCursor[_: P] =
-    P(ESC ~ CharIn("78").!).map {
+    P(CharIn("78q").!).map {
       case "7" => SaveCursorPosition
       case "8" => RestoreCursorPosition
-      case _ => ???
+      case _   => Ignore
     }
 
+  def ignored[_: P] = P(CharIn("0-9").rep(0) ~ "h").map(_ => Ignore)
+
+  def parser[_: P] = P(
+    "\u001b" ~ (
+      ("[" ~ (
+        clear
+        | cursorCSI
+        | cursorAbsoluteCSI
+        | toggleLatex
+        | cursorHistory
+        | SGR
+        | ("?" ~ (
+          cursorShowHide
+          | ignored ))
+        ))
+      | ( "]" ~ xOSC)
+      | "=".!.map(_ => Ignore)
+      | oldSchoolCursor
+    )
+  )
+
   def NextAction[_: P]: P[Action] = P(
-    cursorAbsoluteCSI
-    | cursorCSI
-    | clear
-    | xOSC
-    | SGR
+    parser
     | BEL
-    | toggleLatex
     | specialCharacters
-    | cursorShowHide
-    | cursorHistory
-    | oldSchoolCursor
+    | "\u001b".!.map(_ => Ignore)
     | AnyChar.!.map(str => Write(str(0))))
 }

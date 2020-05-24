@@ -1,6 +1,7 @@
 package term
 
-import java.io.InputStream
+import java.io.{BufferedReader, InputStream, InputStreamReader}
+import java.nio.charset.StandardCharsets
 
 import fastparse._
 import NoWhitespace._
@@ -11,7 +12,7 @@ case class SetTitle(str: String) extends Action
 case class SetStyle(sgr: Seq[Int]) extends Action
 case class MoveCursor(x: Int, y: Int) extends Action
 case class SetColumn(col: Int) extends Action
-case class SetCursor(x: Int, y: Int) extends Action
+case class SetCursor(y: Int, x: Int) extends Action
 case class SetCursorVisibility(visible: Boolean) extends Action
 case class ClearDisplay(clearType: Int) extends Action
 case class ClearLine(clearType: Int) extends Action
@@ -24,9 +25,10 @@ object ActionParser {
   def parse(input: InputStream): Iterator[Action] = new Iterator[Action] {
     val iter = new Iterator[String] {
       var _hasNext = true
+      val reader = new InputStreamReader(input, StandardCharsets.UTF_8)
       override def hasNext: Boolean = _hasNext
       override def next(): String   = {
-        val char = input.read
+        val char = reader.read
         if (char == -1) _hasNext = false
         char.toChar.toString
       }
@@ -128,7 +130,6 @@ object ActionParser {
     cursorAbsoluteCSI
     | cursorCSI
     | clear
-    | cursorShowHide
     | xOSC
     | SGR
     | BEL

@@ -10,7 +10,7 @@ import javax.swing.JLabel
 import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.text.{Font, Text}
 import scalafx.scene.paint.{Color => ColorFX}
-import org.scilab.forge.jlatexmath.{TeXConstants, TeXFormula}
+import org.scilab.forge.jlatexmath.{DefaultTeXFont, TeXConstants, TeXFormula}
 
 import scala.Ordering.Double.TotalOrdering
 import scala.language.implicitConversions
@@ -81,6 +81,15 @@ object DrawableInstances {
 
   implicit class BlockOps(block: TerminalLine#Block) extends Drawable[TerminalLine#Block] {
     private def style = block.style
+    private lazy val formula =
+      try {
+        Some(new TeXFormula(block.text))
+      } catch {
+        case _: Exception => None
+      }
+
+    private lazy val icon   =
+      formula.map(_.createTeXIcon(TeXConstants.STYLE_DISPLAY, 20))
 
     private lazy val bounds: Bounds = {
       val textObject = new Text(block.text)
@@ -88,28 +97,40 @@ object DrawableInstances {
       textObject.getBoundsInLocal
     }
 
-    private lazy val formula = new TeXFormula(block.text)
-    private lazy val icon    = formula.createTeXIcon(TeXConstants.STYLE_DISPLAY, 20)
+    def width: Double  =
+      (style.latexRendering, icon) match {
+        case (true, Some(icon)) => icon.getIconWidth
+        case (_, _)             => bounds.getWidth
+      }
 
-    def width: Double  = if (style.latexRendering) icon.getIconWidth else bounds.getWidth
-    def height: Double = if (style.latexRendering) icon.getIconHeight else bounds.getHeight
+    def height: Double =
+      (style.latexRendering, icon) match {
+        case (true, Some(icon)) => icon.getIconHeight
+        case (_, _)             => bounds.getHeight
+      }
 
     def widthTo(i: Int): Double = width / block.len() * i
 
     def draw(implicit gc: GraphicsContext): Unit = {
       gc.fill = style.background
       gc.fillRect(0, 0, width, height)
-      if (style.latexRendering) {
-        val jl = new JLabel()
-        val img =
-          new BufferedImage(icon.getIconWidth, icon.getIconHeight, BufferedImage.TYPE_INT_RGB)
-        val g2 = img.createGraphics()
-        jl.setForeground(style.foreground)
-        icon.paintIcon(jl, g2, 0, 0)
-        gc.drawImage(SwingFXUtils.toFXImage(img, null), 0, 0)
-      } else {
-        gc.fill = style.foreground
-        gc.fillText(block.text, 0, 0)
+      (style.latexRendering, icon) match {
+        case (true, Some(icon)) => {
+          val jl = new JLabel()
+          val img = new BufferedImage(icon.getIconWidth, icon.getIconHeight, BufferedImage.TYPE_INT_RGB)
+          val g2 = img.createGraphics()
+          jl.setForeground(style.foreground)
+          icon.paintIcon(jl, g2, 0, 0)
+          gc.drawImage(SwingFXUtils.toFXImage(img, null), 0, 0)
+        }
+        case (true, None) => {
+          gc.fill = ColorFX.Red
+          gc.fillText(block.text, 0, 0)
+        }
+        case (false, _) => {
+          gc.fill = style.foreground
+          gc.fillText(block.text, 0, 0)
+        }
       }
     }
 

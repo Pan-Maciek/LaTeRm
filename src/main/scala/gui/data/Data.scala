@@ -1,18 +1,9 @@
 package gui.data
 
-import java.awt.Color
-import java.awt.image.BufferedImage
-
 import gui.Style
-import javafx.embed.swing.SwingFXUtils
-import javafx.geometry.Bounds
-import javax.swing.JLabel
-import org.scilab.forge.jlatexmath.{TeXConstants, TeXFormula}
-import scalafx.scene.canvas.GraphicsContext
-import scalafx.scene.text.{Font, Text}
 
-import scala.collection.mutable
 import scala.collection.Searching._
+import scala.collection.mutable
 import scala.language.implicitConversions
 
 final case class TerminalLine() {

@@ -24,6 +24,7 @@ case class StdoutDriver(
           case ClearDisplay(n)              => linesBuffer.eraseInDisplay(n)
           case ClearLine(n)                 => linesBuffer.eraseInLine(n)
           case Bell                         => // play bell sound
+          case Ignore                       =>
           case SaveCursorPosition           => linesBuffer.cursor.savePosition()
           case RestoreCursorPosition        => linesBuffer.cursor.restorePosition()
           case SetCursorVisibility(visible) => linesBuffer.cursor.setVisibility(visible)

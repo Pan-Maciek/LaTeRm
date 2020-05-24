@@ -26,10 +26,15 @@ class TerminalPanel extends Group {
         } else {
           screen.partialDraw()
         }
+        curs.viewCoords = terminal.cursorPosition
+        if (new ju.Random().nextFloat() > .95) {
+          println(curs.viewCoords)
+          println(f"${curs.x}, ${curs.y}")
+        }
+
+        cursorView.onUpdate()
       }
 
-      // curs.viewCoords = terminal.cursorPosition
-      // cursorView.onUpdate()
     }
   }
   timer.schedule(task, 500L, UiConfig.updatePeriod)

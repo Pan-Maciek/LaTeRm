@@ -38,7 +38,7 @@ object DrawableInstances {
   }
 
   implicit class TerminalLineOps(line: TerminalLine) extends Drawable[TerminalLine] {
-    override def width: Double  = line.blocksSeq().foldLeft(0.0)(_ + _.width)
+    override def width: Double = line.blocksSeq().foldLeft(0.0)(_ + _.width)
     override def height: Double =
       if (line.isEmpty) UiConfig.DefaultLineHeight
       else line.blocksSeq().map(_.height).max
@@ -58,23 +58,24 @@ object DrawableInstances {
     }
 
     def widthTo(column: Int): Double = {
-      // for some reason cursor can be at line.len??
-      if (column >= line.len) {
+      if (column >= line.len)
         return width
-      }
-
       val blocks = line.blocksSeq()
+      // println(f"Calc: $column, ${line.len}")
 
-      var i     = 0
-      var x     = 0.0
-      var block = blocks(i)
-      while (!(block.from <= column && block.to < column)) {
-        x += block.width
+      var i            = 0
+      var pos          = 0
+      var runningWidth = 0.0
+      while (pos <= column) {
+        val block = blocks(i)
+
+        pos += block.len
+        runningWidth += block.widthTo(column)
+        // println(f"Pos: $pos, ${column}")
         i += 1
-        block = blocks(i)
       }
 
-      x + block.widthTo(column - block.from)
+      runningWidth
     }
 
   }
@@ -88,7 +89,7 @@ object DrawableInstances {
         case _: Exception => None
       }
 
-    private lazy val icon   =
+    private lazy val icon =
       formula.map(_.createTeXIcon(TeXConstants.STYLE_DISPLAY, 20))
 
     private lazy val bounds: Bounds = {
@@ -97,7 +98,7 @@ object DrawableInstances {
       textObject.getBoundsInLocal
     }
 
-    def width: Double  =
+    def width: Double =
       (style.latexRendering, icon) match {
         case (true, Some(icon)) => icon.getIconWidth
         case (_, _)             => bounds.getWidth
@@ -109,7 +110,17 @@ object DrawableInstances {
         case (_, _)             => bounds.getHeight
       }
 
-    def widthTo(i: Int): Double = width / block.len() * i
+    def widthTo(col: Int): Double = {
+      if (col >= block.to)
+        return width
+
+      val from  = 0
+      val until = col - block.from
+      // println(f"Block: $from, $until, $col, ${block.from}")
+      val textObj = new Text(block.text.substring(0, until))
+
+      textObj.getBoundsInLocal().getWidth()
+    }
 
     def draw(implicit gc: GraphicsContext): Unit = {
       gc.fill = style.background
@@ -117,7 +128,8 @@ object DrawableInstances {
       (style.latexRendering, icon) match {
         case (true, Some(icon)) => {
           val jl = new JLabel()
-          val img = new BufferedImage(icon.getIconWidth, icon.getIconHeight, BufferedImage.TYPE_INT_RGB)
+          val img =
+            new BufferedImage(icon.getIconWidth, icon.getIconHeight, BufferedImage.TYPE_INT_RGB)
           val g2 = img.createGraphics()
           jl.setForeground(style.foreground)
           icon.paintIcon(jl, g2, 0, 0)

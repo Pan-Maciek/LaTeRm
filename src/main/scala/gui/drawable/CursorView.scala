@@ -16,8 +16,7 @@ class CursorView(curs: Cursor) extends Rectangle {
 
   def onUpdate(): Unit = {
     val (newX, newY, w, h) = curs.viewCoords
-    translateX = newX
-    translateY = newY
+    relocate(newX, newY)
     width = w
     height = h
 

@@ -19,8 +19,8 @@ class Terminal {
   private val stdout: InputStream = pty.getInputStream
 
   def write(char: Array[Byte]): Unit = stdin.write(char)
-  val defaultWidth = 86
-  val defaultHeight = 31
+  val defaultWidth                   = 86
+  val defaultHeight                  = 31
   pty.setWinSize(new WinSize(defaultWidth, defaultHeight))
 
   val title = new StringProperty(this, "title", "LaTeRm")
@@ -31,7 +31,7 @@ class Terminal {
     onChange { (_, oldValue, newValue) => () } // TODO resizing logic
   }
 
-  private val linesBuffer = LinesBuffer(width, height)
+  val linesBuffer = LinesBuffer(width, height)
 
   def lines: Seq[TerminalLine]                         = linesBuffer.lastLines
   def changedLines: Seq[(TerminalLine, Boolean)]       = linesBuffer.lastLinesChanged

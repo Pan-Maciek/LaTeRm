@@ -20,13 +20,16 @@ class TerminalPanel extends Group {
   val timer = new ju.Timer()
   val task = new ju.TimerTask {
     def run() = {
-      if (terminal.modified) {
-        screen.redraw()
-      } else {
-        screen.partialDraw()
+      terminal.linesBuffer.synchronized {
+        if (terminal.modified) {
+          screen.redraw()
+        } else {
+          screen.partialDraw()
+        }
       }
-      curs.viewCoords = terminal.cursorPosition
-      cursorView.onUpdate()
+
+      // curs.viewCoords = terminal.cursorPosition
+      // cursorView.onUpdate()
     }
   }
   timer.schedule(task, 500L, UiConfig.updatePeriod)

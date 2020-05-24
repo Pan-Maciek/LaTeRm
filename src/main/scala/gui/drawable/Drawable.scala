@@ -84,7 +84,7 @@ object DrawableInstances {
 
     private lazy val bounds: Bounds = {
       val textObject = new Text(block.text)
-      textObject.setFont(Font.default)
+      textObject.setFont(UiConfig.font)
       textObject.getBoundsInLocal
     }
 
@@ -97,7 +97,6 @@ object DrawableInstances {
     def widthTo(i: Int): Double = width / block.len() * i
 
     def draw(implicit gc: GraphicsContext): Unit = {
-      gc.font = Font.default
       gc.fill = style.background
       gc.fillRect(0, 0, width, height)
       if (style.latexRendering) {

@@ -19,12 +19,15 @@ class Terminal {
   private val stdout: InputStream = pty.getInputStream
 
   def write(char: Array[Byte]): Unit = stdin.write(char)
+  val defaultWidth = 86
+  val defaultHeight = 31
+  pty.setWinSize(new WinSize(defaultWidth, defaultHeight))
 
   val title = new StringProperty(this, "title", "LaTeRm")
-  val width: IntegerProperty = new IntegerProperty(this, "width", 100) {
+  val width: IntegerProperty = new IntegerProperty(this, "width", defaultWidth) {
     onChange { (_, oldValue, newValue) => () } // TODO resizing logic
   }
-  val height: IntegerProperty = new IntegerProperty(this, "height", 100) {
+  val height: IntegerProperty = new IntegerProperty(this, "height", defaultHeight) {
     onChange { (_, oldValue, newValue) => () } // TODO resizing logic
   }
 

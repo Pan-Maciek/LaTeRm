@@ -4,17 +4,17 @@ import java.awt.Color
 import java.awt.image.BufferedImage
 
 import config.UiConfig
+import gui.data.TerminalLine
 import javafx.embed.swing.SwingFXUtils
 import javafx.geometry.Bounds
 import javax.swing.JLabel
+import org.scilab.forge.jlatexmath.{TeXConstants, TeXFormula}
 import scalafx.scene.canvas.GraphicsContext
-import scalafx.scene.text.{Font, Text}
 import scalafx.scene.paint.{Color => ColorFX}
-import org.scilab.forge.jlatexmath.{DefaultTeXFont, TeXConstants, TeXFormula}
+import scalafx.scene.text.Text
 
 import scala.Ordering.Double.TotalOrdering
 import scala.language.implicitConversions
-import gui.data.TerminalLine
 
 trait Drawable[A] {
   def draw(implicit graphicsContext: GraphicsContext): Unit

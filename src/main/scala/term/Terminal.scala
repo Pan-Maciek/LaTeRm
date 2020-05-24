@@ -25,10 +25,10 @@ class Terminal {
 
   val title = new StringProperty(this, "title", "LaTeRm")
   val width: IntegerProperty = new IntegerProperty(this, "width", defaultWidth) {
-    onChange { (_, oldValue, newValue) => () } // TODO resizing logic
+    onChange { (_, _, _) => () } // TODO resizing logic
   }
   val height: IntegerProperty = new IntegerProperty(this, "height", defaultHeight) {
-    onChange { (_, oldValue, newValue) => () } // TODO resizing logic
+    onChange { (_, _, _) => () } // TODO resizing logic
   }
 
   val linesBuffer = LinesBuffer(width, height)

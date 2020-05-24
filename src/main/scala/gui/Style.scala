@@ -2,19 +2,11 @@ package gui
 
 import scalafx.scene.paint.Color
 
-
-sealed trait StyleSetter
-case class SetForeground(val color: Color) extends StyleSetter
-case class SetBackground(val color: Color) extends StyleSetter
-case class SetLatex(val on: Boolean) extends StyleSetter
-case class SetDefault() extends StyleSetter
-case class Skip() extends StyleSetter
-
 case class Style (
-  val foreground: Color,
-  val background: Color,
-  val latexRendering: Boolean,
-  val bold: Boolean
+  foreground: Color,
+  background: Color,
+  latexRendering: Boolean,
+  bold: Boolean
 ) {
   def toggleLatex: Style = copy(latexRendering = !latexRendering)
 

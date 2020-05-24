@@ -1,13 +1,11 @@
 package gui
 
-import scalafx.scene.layout.StackPane
-import gui.Screen
-import gui.drawable.CursorView
-import term.Cursor
 import java.{util => ju}
+
 import config.UiConfig
-import scalafx.scene.layout.Pane
+import gui.drawable.CursorView
 import scalafx.scene.Group
+import term.Cursor
 
 class TerminalPanel extends Group {
   val screen       = new Screen()
@@ -21,17 +19,9 @@ class TerminalPanel extends Group {
   val task = new ju.TimerTask {
     def run() = {
       terminal.linesBuffer.synchronized {
-        if (terminal.modified) {
-          screen.redraw()
-        } else {
-          screen.partialDraw()
-        }
+        if (terminal.modified) screen.redraw()
+        else screen.partialDraw()
         curs.viewCoords = terminal.cursorPosition
-        if (new ju.Random().nextFloat() > .95) {
-          // println(curs.viewCoords)
-          // println(f"${curs.x}, ${curs.y}")
-        }
-
         cursorView.onUpdate()
       }
     }

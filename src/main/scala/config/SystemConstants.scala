@@ -1,7 +1,6 @@
 package config
 
 object SystemConstants {
-  import java.util._
   import scala.jdk.CollectionConverters._
 
   lazy val environment = System.getenv.asScala

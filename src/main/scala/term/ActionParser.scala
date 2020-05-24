@@ -1,10 +1,10 @@
 package term
 
-import java.io.{BufferedReader, InputStream, InputStreamReader}
+import java.io.{InputStream, InputStreamReader}
 import java.nio.charset.StandardCharsets
 
+import fastparse.NoWhitespace._
 import fastparse._
-import NoWhitespace._
 
 sealed trait Action
 case class Write(char: Char) extends Action

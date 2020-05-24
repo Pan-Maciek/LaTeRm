@@ -28,8 +28,8 @@ class TerminalPanel extends Group {
         }
         curs.viewCoords = terminal.cursorPosition
         if (new ju.Random().nextFloat() > .95) {
-          println(curs.viewCoords)
-          println(f"${curs.x}, ${curs.y}")
+          // println(curs.viewCoords)
+          // println(f"${curs.x}, ${curs.y}")
         }
 
         cursorView.onUpdate()

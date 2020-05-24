@@ -36,7 +36,7 @@ case class Cursor(width: IntegerProperty, height: IntegerProperty) {
 
   def setPosition(row: Int, col: Int): Unit = {
     x = max(0, min(width.value, col - 1))
-    y = max(0, row - 1)
+    y = max(0, min(row - 1, height.value))
   }
 
   def setColumn(col: Int): Unit =

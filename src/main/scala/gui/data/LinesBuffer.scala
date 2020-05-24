@@ -19,9 +19,9 @@ case class LinesBuffer(width: IntegerProperty, height: IntegerProperty) {
       // hot fix
       appendBlankLines()
 
-      var i          = 0
       val cursorLine = _lines(cursor.y)
       var cursorY    = 0.0
+      var (i, _)     = lastLinesIndices
 
       while (i < cursor.y) {
         cursorY += _lines(i).height

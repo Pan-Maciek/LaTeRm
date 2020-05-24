@@ -21,17 +21,12 @@ class TerminalPanel extends Group {
   val task = new ju.TimerTask {
     def run() = {
       terminal.linesBuffer.synchronized {
-        if (terminal.modified) {
+        if (terminal.modified)
           screen.redraw()
-        } else {
+        else
           screen.partialDraw()
-        }
-        curs.viewCoords = terminal.cursorPosition
-        if (new ju.Random().nextFloat() > .95) {
-          // println(curs.viewCoords)
-          // println(f"${curs.x}, ${curs.y}")
-        }
 
+        curs.viewCoords = terminal.cursorPosition
         cursorView.onUpdate()
       }
     }

@@ -6,17 +6,22 @@ import com.pty4j.{PtyProcess, WinSize}
 import config.SystemConstants
 import gui.data.{LinesBuffer, TerminalLine}
 import scalafx.beans.property.{IntegerProperty, StringProperty}
+// In order to evaluate tasks, we'll need a Scheduler
+import monix.execution.Scheduler.Implicits.global
 
 import scala.jdk.CollectionConverters._
+import monix.eval.Task
+
+import reactive.design.parser.ParserCoordinator
 
 class Terminal {
   private val cmd = Array(SystemConstants.shell)
   private val env =
     Map("TERM" -> "xterm-color") ++ SystemConstants.environment
 
-  private val pty                 = PtyProcess.exec(cmd, env.asJava)
-  private val stdin: OutputStream = pty.getOutputStream
-  private val stdout: InputStream = pty.getInputStream
+  private val pty                       = PtyProcess.exec(cmd, env.asJava)
+  private val stdin: OutputStream       = pty.getOutputStream
+  private val stdout: Task[InputStream] = Task { pty.getInputStream }
 
   def write(char: Array[Byte]): Unit = stdin.write(char)
   val defaultWidth                   = 86
@@ -39,5 +44,8 @@ class Terminal {
   def modified: Boolean                                = linesBuffer.modified
   def cursorPosition: (Double, Double, Double, Double) = linesBuffer.cursorCoords
 
-  val driver = StdoutDriver(this, linesBuffer, stdout)
+  val observable = ParserCoordinator(stdout)
+
+  val task = StdoutDriver(this, linesBuffer, observable)
+  task.runAsyncAndForget
 }

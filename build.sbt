@@ -19,6 +19,7 @@ libraryDependencies += "org.typelevel" %% "cats-core"      % "2.1.1"
 libraryDependencies += "org.typelevel" %% "cats-effect"    % "2.1.4"
 libraryDependencies += "io.monix"      %% "monix"          % "3.2.2"
 libraryDependencies += "io.monix"      %% "monix-reactive" % "3.2.2"
+libraryDependencies += "io.monix"      %% "monix-eval"     % "3.2.2"
 
 lazy val osName = System.getProperty("os.name") match {
   case n if n.startsWith("Linux")   => "linux"

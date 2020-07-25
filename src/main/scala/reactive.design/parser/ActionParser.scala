@@ -12,11 +12,14 @@ import monix.eval.Task
 object ActionParser {
   def apply(iter: Iterator[String]): Iterator[Action] = new Iterator[Action] {
     override def hasNext: Boolean = iter.hasNext
-    override def next(): Action =
-      fastparse.parse(iter, NextAction(_)) match {
+    override def next(): Action = {
+      val action = fastparse.parse(iter, NextAction(_)) match {
         case Parsed.Success(value, _) => value
         case Parsed.Failure(_, _, _)  => ???
       }
+      println(s"Parser: Action: $action, Thread: ${Thread.currentThread.getName()}")
+      action
+    }
   }
 
   // https://en.wikipedia.org/wiki/C0_and_C1_control_codes

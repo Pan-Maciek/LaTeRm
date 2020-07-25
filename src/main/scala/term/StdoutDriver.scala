@@ -24,6 +24,7 @@ import reactive.design.parser.RestoreCursorPosition
 import reactive.design.parser.SetCursorVisibility
 import reactive.design.parser.Warn
 import reactive.design.parser.ToggleLatex
+import monix.reactive.OverflowStrategy
 
 // @deprecated("useless piece of code...")
 object StdoutDriver {

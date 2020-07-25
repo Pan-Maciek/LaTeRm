@@ -33,7 +33,7 @@ object StdoutDriver {
       observable: Observable[Action]
   ): Task[Unit] = {
     observable.mapEval { action =>
-      Task.evalAsync {
+      Task.eval {
         linesBuffer.synchronized {
           action match {
             case Write(char)     => linesBuffer.write(char)
@@ -54,7 +54,7 @@ object StdoutDriver {
             case Warn(cause)                  => println(cause)
           }
         }
-        // println(s"Action: $action, Thread: ${Thread.currentThread.getName()}")
+        println(s"Action: $action, Thread: ${Thread.currentThread.getName()}")
       }
     }.completedL
   }

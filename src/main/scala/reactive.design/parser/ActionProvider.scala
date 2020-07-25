@@ -12,7 +12,7 @@ object ActionProvider {
     val task = inputStreamT
       .map { _.iterator() }
       .map { ActionParser(_) }
-    Observable.fromIterator(task)
+    Observable.fromIterator(task).executeAsync
   }
 
   implicit class InputStreamOps(inputStream: InputStream) {

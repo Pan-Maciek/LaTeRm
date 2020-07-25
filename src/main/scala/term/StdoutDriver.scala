@@ -25,6 +25,7 @@ import reactive.design.parser.SetCursorVisibility
 import reactive.design.parser.Warn
 import reactive.design.parser.ToggleLatex
 
+// @deprecated("useless piece of code...")
 object StdoutDriver {
   def apply(
       terminal: Terminal,

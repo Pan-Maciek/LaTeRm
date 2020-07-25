@@ -7,7 +7,7 @@ import java.nio.charset.StandardCharsets
 import monix.reactive.Observable
 import monix.eval.Task
 
-object ParserCoordinator {
+object ActionProvider {
   def apply(inputStreamT: Task[InputStream]): Observable[Action] = {
     val task = inputStreamT
       .map { _.iterator() }

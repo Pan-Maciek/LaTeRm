@@ -12,7 +12,7 @@ import monix.execution.Scheduler.Implicits.global
 import scala.jdk.CollectionConverters._
 import monix.eval.Task
 
-import reactive.design.parser.ParserCoordinator
+import reactive.design.parser.ActionProvider
 
 class Terminal {
   private val cmd = Array(SystemConstants.shell)
@@ -44,8 +44,8 @@ class Terminal {
   def modified: Boolean                                = linesBuffer.modified
   def cursorPosition: (Double, Double, Double, Double) = linesBuffer.cursorCoords
 
-  val observable = ParserCoordinator(stdout)
+  val actions = ActionProvider(stdout)
 
-  val task = StdoutDriver(this, linesBuffer, observable)
+  val task = StdoutDriver(this, linesBuffer, actions)
   task.runAsyncAndForget
 }

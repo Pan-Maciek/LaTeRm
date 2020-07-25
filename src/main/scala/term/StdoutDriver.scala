@@ -9,9 +9,12 @@ import monix.reactive.Observable
 import monix.eval.Task
 
 import reactive.design.parser.Action
+import reactive.design.parser.SetTitle
+import reactive.design.parser.Write
+import reactive.design.parser.SetStyle
+import reactive.design.parser.MoveCursor
 import reactive.design.parser.SetColumn
 import reactive.design.parser.SetCursor
-import reactive.design.parser.ToggleLatex
 import reactive.design.parser.ClearDisplay
 import reactive.design.parser.ClearLine
 import reactive.design.parser.Bell
@@ -20,10 +23,7 @@ import reactive.design.parser.SaveCursorPosition
 import reactive.design.parser.RestoreCursorPosition
 import reactive.design.parser.SetCursorVisibility
 import reactive.design.parser.Warn
-import reactive.design.parser.MoveCursor
-import reactive.design.parser.Write
-import reactive.design.parser.SetTitle
-import reactive.design.parser.SetStyle
+import reactive.design.parser.ToggleLatex
 
 object StdoutDriver {
   def apply(

@@ -9,23 +9,6 @@ import fastparse.NoWhitespace._
 import monix.reactive.Observable
 import monix.eval.Task
 
-sealed trait Action
-case class Write(char: Char)                     extends Action
-case class SetTitle(str: String)                 extends Action
-case class SetStyle(sgr: Seq[Int])               extends Action
-case class MoveCursor(x: Int, y: Int)            extends Action
-case class SetColumn(col: Int)                   extends Action
-case class SetCursor(y: Int, x: Int)             extends Action
-case class SetCursorVisibility(visible: Boolean) extends Action
-case class ClearDisplay(clearType: Int)          extends Action
-case class ClearLine(clearType: Int)             extends Action
-case object SaveCursorPosition                   extends Action
-case object RestoreCursorPosition                extends Action
-case object ToggleLatex                          extends Action
-case object Ignore                               extends Action
-case object Bell                                 extends Action
-case class Warn(cause: Any)                      extends Action
-
 object ActionParser {
   def apply(iter: Iterator[String]): Iterator[Action] = new Iterator[Action] {
     override def hasNext: Boolean = iter.hasNext

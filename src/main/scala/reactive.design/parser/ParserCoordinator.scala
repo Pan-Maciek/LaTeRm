@@ -8,9 +8,8 @@ import monix.reactive.Observable
 import monix.eval.Task
 
 object ParserCoordinator {
-
-  def apply(iteratorTask: Task[InputStream]): Observable[Action] = {
-    val task = iteratorTask
+  def apply(inputStreamT: Task[InputStream]): Observable[Action] = {
+    val task = inputStreamT
       .map { _.iterator() }
       .map { ActionParser(_) }
     Observable.fromIterator(task)

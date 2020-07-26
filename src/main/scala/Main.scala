@@ -48,7 +48,7 @@ object Main extends JFXApp {
   panel.screen.height <== stage.height
   panel.screen.drawBlank()
 
-  effects.delayExecution(150.millis).runAsyncAndForget
+  effects.delayExecution(20.millis).runAsyncAndForget
 }
 
 object Pty {
@@ -67,9 +67,7 @@ object Pty {
   }
 
   implicit class PtyOps(pty: PtyProcess) {
-    def write(bytes: Array[Byte]): Unit = {
-      println("Writing to stream!")
+    def write(bytes: Array[Byte]): Unit =
       pty.getOutputStream().write(bytes)
-    }
   }
 }

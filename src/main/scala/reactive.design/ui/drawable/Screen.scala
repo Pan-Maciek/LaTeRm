@@ -5,7 +5,6 @@ import scalafx.beans.property.StringProperty
 import scalafx.geometry.VPos
 import scalafx.scene.canvas.Canvas
 import scalafx.scene.paint.Color
-import term.Terminal
 
 import reactive.design.data.TerminalLine
 import reactive.design.ui.drawable.DrawableInstances._

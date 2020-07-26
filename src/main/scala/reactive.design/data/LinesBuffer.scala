@@ -2,6 +2,8 @@ package reactive.design.data
 
 import scala.collection.mutable.ArrayBuffer
 import reactive.design.ui.drawable.Drawable
+import config.SystemConstants
+import config.Windows
 
 /**
   * Note that function write should be rewritten so that it handles only standard characters write
@@ -75,10 +77,6 @@ class LinesBuffer(cursor: CursorData) {
 
   def eraseAllAndSetCursor(): Unit = {
     eraseAll()
-    // if (SystemConstants.osName == Windows) {
-    //   val (top, last) = lastLinesIndices
-    //   cursor.setPosition(top + 1, 1)
-    // }
   }
 
   private def eraseAll(): Unit = {

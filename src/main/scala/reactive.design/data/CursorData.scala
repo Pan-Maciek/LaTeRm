@@ -4,63 +4,66 @@ import gui.Style
 
 import scala.math._
 import scalafx.scene.input.KeyCode.D
+import reactive.design.config.TerminalSettings
 
-final case class CursorEvent(x: Int, y: Int, visible: Boolean, style: Style)
+final case class CursorDataPeek(x: Int, y: Int, visible: Boolean, style: Style)
 
-class CursorData(maxWidth: Int, maxHeight: Int) extends Modifiable[CursorEvent] {
+class CursorData(maxWidth: Int = TerminalSettings.defaultMaxCharsInLine) {
+  private var _style: Style = Style.default
+  private var visible       = false
 
-  private var style: Style = Style.default
-  private var modified     = true
-  private var visible      = false
-
-  private var x = 0
-  private var y = 0
+  private var _x = 0
+  private var _y = 0
 
   private var savedX = 0
   private var savedY = 0
 
-  override def peek(): CursorEvent = {
-    modified = false
-    CursorEvent(x, y, visible, style)
+  def x: Int       = _x
+  def y: Int       = _y
+  def style: Style = _style
+
+  def applySgr(sgr: Seq[Int]): Unit = {
+    _style = _style.applySgr(sgr)
   }
 
-  override def isModified(): Boolean = modified
+  def toggleLatex(): Unit = {
+    _style = _style.toggleLatex
+  }
+
+  def peek(): CursorDataPeek =
+    CursorDataPeek(_x, _y, visible, _style)
 
   def savePosition(): Unit = {
-    savedX = x
-    savedY = y
+    savedX = _x
+    savedY = _y
   }
 
   def restorePosition(): Unit = {
-    x = savedX
-    y = savedY
-
-    modified = true
+    _x = savedX
+    _y = savedY
   }
 
-  def setVisibility(visible: Boolean): Unit = {
+  def setVisibility(visible: Boolean): Unit =
     this.visible = visible
 
-    modified = true
+  def translateX(offsetX: Int) = {
+    _x += 1
+    if (_x >= maxWidth) {
+      _x = 0
+      _y += 1
+    }
   }
 
   def translate(offsetX: Int, offsetY: Int): Unit = {
-    x = max(0, min(maxWidth, x + offsetX))
-    y = max(0, min(maxHeight, y + offsetY))
-
-    modified = true
+    _x = max(0, min(maxWidth, _x + offsetX))
+    _y = max(0, _y + offsetY)
   }
 
   def setPosition(row: Int, col: Int): Unit = {
-    x = max(0, min(maxWidth, col - 1))
-    y = max(0, min(row - 1, maxHeight))
-
-    modified = true
+    _x = max(0, min(maxWidth, col - 1))
+    _y = max(0, row - 1)
   }
 
-  def setColumn(col: Int): Unit = {
-    x = max(0, min(maxWidth, col - 1))
-
-    modified = true
-  }
+  def setColumn(col: Int): Unit =
+    _x = max(0, min(maxWidth, col - 1))
 }

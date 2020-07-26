@@ -1,5 +1,6 @@
 package reactive.design
 
+import reactive.design.data.DataPeek
 import reactive.design.data.LinesBuffer
 import reactive.design.data.CursorData
 import reactive.design.data.UIUpdate
@@ -57,7 +58,7 @@ private class DataManager {
     events
       .mapEval { event =>
         event match {
-          case Left(_)       => Task { Some(UIUpdate(buffer, cursor.peek())) }
+          case Left(_)       => Task { Some(UIUpdate(DataPeek(buffer, cursor.peek()))) }
           case Right(action) => execAction(action) *> Task.pure(None)
         }
       }
@@ -84,6 +85,8 @@ private class DataManager {
         case Bell                         => ()
         case Ignore                       => ()
       }
+
+      buffer.appendBlankLines()
     }
   }
 }

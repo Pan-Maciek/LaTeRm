@@ -1,37 +1,18 @@
 package reactive.design.data
 
 import scala.collection.mutable.ArrayBuffer
+import reactive.design.ui.drawable.Drawable
 
 /**
   * Note that function write should be rewritten so that it handles only standard characters write
   * We have to synchronize on  _mask and _lines
   */
 class LinesBuffer(cursor: CursorData) {
-  private val _lines = ArrayBuffer(new TerminalLine())
-
-  // Cursor's x, y, width, height
-  // def cursorCoords: (Double, Double, Double, Double) = {
-  //   synchronized {
-  //     // hot fix
-  //     appendBlankLines()
-
-  //     val cursorLine = _lines(cursor.y)
-  //     var cursorY    = 0.0
-  //     var (i, _)     = lastLinesIndices
-
-  //     while (i < cursor.y) {
-  //       cursorY += _lines(i).height
-  //       i += 1
-  //     }
-  //     val cursorX = cursorLine.widthTo(cursor.x)
-  //     (cursorX, cursorY, 10.0, 15.0)
-  //   }
-  // }
+  val _lines = ArrayBuffer(new TerminalLine())
 
   def eraseInLine(n: Int): Unit = {
     appendBlankLines()
     n match {
-      // TODO
       case 0 =>
         eraseFromCursorToLineEnd() // replace everything from cursor to end of the line with whitespace, does not change cursor position
       case 1 =>
@@ -112,7 +93,7 @@ class LinesBuffer(cursor: CursorData) {
     }
   }
 
-  private def appendBlankLines(): Unit = {
+  def appendBlankLines(): Unit = {
     while (cursor.y >= _lines.size) {
       _lines += (new TerminalLine())
     }
@@ -162,36 +143,6 @@ class LinesBuffer(cursor: CursorData) {
     line.deleteTo(cursor.x)
   }
 
-  /**  Returns list of last lines fitting the screen */
-  // def lastLines: Seq[TerminalLine] = {
-  //   val (from, until) = lastLinesIndices
-  //   _lines.slice(from, until).toSeq
-  // }
-
-  /**  Returns indicies of last lines fitting the screen,
-    *  Note that it should be synchronized by calling method!
-    */
-  // private def lastLinesIndices: (Int, Int) = {
-  //   var i             = linesCount - 1
-  //   var runningHeight = 0.0
-  //   val maxH          = UiConfig.height - 25
-
-  //   while (i >= 0 && runningHeight < maxH) {
-  //     runningHeight += _lines(i).height
-  //     i -= 1
-  //   }
-
-  //   if (i < 0) {
-  //     i += 1
-  //   }
-
-  //   if (runningHeight > maxH) {
-  //     runningHeight -= _lines(i).height
-  //     i += 1
-  //   }
-
-  //   (i, linesCount)
-  // }
 }
 
 object LinesBuffer {

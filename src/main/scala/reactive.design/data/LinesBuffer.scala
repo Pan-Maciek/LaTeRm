@@ -1,18 +1,13 @@
 package reactive.design.data
 
-import scalafx.beans.property.IntegerProperty
-import term.Cursor
-
 import scala.collection.mutable.ArrayBuffer
-import gui.drawable.DrawableInstances._
-import config.{SystemConstants, UiConfig, Windows}
 
 /**
   * Note that function write should be rewritten so that it handles only standard characters write
   * We have to synchronize on  _mask and _lines
   */
 class LinesBuffer(cursor: CursorData) {
-  private val _lines = ArrayBuffer(TerminalLine())
+  private val _lines = ArrayBuffer(new TerminalLine())
 
   // Cursor's x, y, width, height
   // def cursorCoords: (Double, Double, Double, Double) = {
@@ -119,7 +114,7 @@ class LinesBuffer(cursor: CursorData) {
 
   private def appendBlankLines(): Unit = {
     while (cursor.y >= _lines.size) {
-      _lines += (TerminalLine())
+      _lines += (new TerminalLine())
     }
   }
 

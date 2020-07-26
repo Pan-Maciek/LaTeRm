@@ -1,12 +1,10 @@
 package reactive.design.data
 
-import gui.Style
-
 import scala.collection.Searching._
 import scala.collection.mutable
 import scala.language.implicitConversions
 
-final case class TerminalLine() {
+final class TerminalLine {
 
   private val sb     = new StringBuilder
   private val blocks = mutable.ArrayBuffer(Block.empty)

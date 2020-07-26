@@ -1,10 +1,9 @@
 package reactive.design.data
 
-import gui.Style
-
 import scala.math._
 import scalafx.scene.input.KeyCode.D
 import reactive.design.config.TerminalSettings
+import reactive.design.data.Style
 
 final case class CursorDataPeek(x: Int, y: Int, visible: Boolean, style: Style)
 

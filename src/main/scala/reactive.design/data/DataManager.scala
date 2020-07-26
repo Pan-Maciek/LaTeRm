@@ -1,16 +1,10 @@
 package reactive.design
 
-import monix.reactive.Observable
-import reactive.design.parser.Action
-import monix.eval.Task
 import reactive.design.data.LinesBuffer
 import reactive.design.data.CursorData
 import reactive.design.data.UIUpdate
-
-import scala.concurrent.duration._
 import reactive.design.data.UIEvent
-import cats.implicits._
-import cats.syntax.all._
+import reactive.design.parser.Action
 import reactive.design.parser.SetTitle
 import reactive.design.parser.SetStyle
 import reactive.design.parser.MoveCursor
@@ -27,10 +21,14 @@ import reactive.design.parser.SetCursorVisibility
 import reactive.design.parser.Warn
 import reactive.design.parser.Write
 
+import scala.concurrent.duration._
+import monix.reactive.Observable
+import monix.eval.Task
+
 /**
   * Responsible for keeping state and forwarding updates to UI by returning Observable[UiUpdate]
   *
-  * Note that whoever subscribes must done it synchronously and keep backpressure since we pass around mutable data!
+  * Note that whoever subscribes must do it synchronously and keep backpressure since we pass around mutable data!
   */
 object DataManager {
   def apply(actionsObservable: Observable[Action]): Observable[UIEvent] = {

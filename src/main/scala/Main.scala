@@ -14,27 +14,41 @@ import cats.effect.IOApp
 import reactive.design.DataManager
 import reactive.design.UIManager
 import monix.execution.Scheduler.Implicits.global
+import scala.concurrent.duration._
+import javafx.scene.input.KeyCode.{DOWN, LEFT, RIGHT, UP}
+import cats.syntax.all._
 
 object Main extends JFXApp {
   import Pty._
   val pty              = Pty()
   val actions          = ActionProvider(Task { pty.getInputStream() })
   val events           = DataManager(actions)
-  val (panel, effects) = UIManager(events, pty.write)
+  val (panel, effects) = UIManager(events)
 
   stage = new PrimaryStage {
     scene = new Scene(UiConfig.width, UiConfig.height) {
       root = panel
+      onKeyTyped = e => pty.write(e.getCharacter.getBytes)
+      onKeyPressed = e => {
+        val bytes = e.getCode match {
+          case UP    => Some(("\u001b[A".getBytes))
+          case DOWN  => Some(("\u001b[B".getBytes))
+          case RIGHT => Some(("\u001b[C".getBytes))
+          case LEFT  => Some(("\u001b[D".getBytes))
+          case _     => None
+        }
+        Task { bytes.map(pty.write) }.runToFuture
+      }
     }
   }
-  panel.screen.drawBlank()
   stage.onCloseRequest = _ => Platform.exit()
-  // terminal.width <== stage.width
-  // terminal.height <== stage.height
+  stage.title.value_=("LaTerm")
 
-  // val task = StdoutDriver(this, linesBuffer, actions)
-  // task.runAsyncAndForget  terminal.requestFocus()
-  effects.runAsyncAndForget
+  panel.screen.width <== stage.width
+  panel.screen.height <== stage.height
+  panel.screen.drawBlank()
+
+  effects.delayExecution(150.millis).runAsyncAndForget
 }
 
 object Pty {
@@ -53,7 +67,9 @@ object Pty {
   }
 
   implicit class PtyOps(pty: PtyProcess) {
-    def write(bytes: Array[Byte]): Unit =
+    def write(bytes: Array[Byte]): Unit = {
+      println("Writing to stream!")
       pty.getOutputStream().write(bytes)
+    }
   }
 }

@@ -9,8 +9,8 @@ import reactive.design.ui.drawable.Cursor
 import reactive.design.ui.Screen
 import reactive.design.data.TerminalLine
 
-class Panel(writeCallback: Array[Byte] => Unit) extends Group {
-  val screen: Screen = new Screen(writeCallback)
+class Panel() extends Group {
+  val screen: Screen = new Screen()
   val curso: Cursor  = new Cursor()
 
   children.addAll(screen, curso)

@@ -11,8 +11,8 @@ import reactive.design.data.LinesBuffer
 import reactive.design.data.TerminalLine
 
 object UIManager {
-  def apply(events: Observable[UIEvent], callback: Array[Byte] => Unit): (Panel, Task[Unit]) = {
-    val manager = new UIManager(callback)
+  def apply(events: Observable[UIEvent]): (Panel, Task[Unit]) = {
+    val manager = new UIManager()
     val task = events
       .mapEval(event => Task { manager.onEvent(event) })
       .completedL
@@ -22,8 +22,8 @@ object UIManager {
 
 }
 
-private class UIManager(callback: Array[Byte] => Unit) {
-  val panel = new Panel(callback)
+private class UIManager() {
+  val panel = new Panel()
 
   def onEvent(event: UIEvent) = {
     event match {

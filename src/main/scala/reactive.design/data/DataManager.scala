@@ -42,7 +42,7 @@ object DataManager {
 
   private def framesObservable(): Observable[FrameT] =
     Observable
-      .intervalWithFixedDelay(40.millis)
+      .intervalWithFixedDelay(80.millis)
       .map(_ => Frame)
 
 }

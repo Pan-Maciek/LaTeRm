@@ -1,19 +1,15 @@
 package reactive.design.ui
 
-import config.UiConfig
-import scalafx.beans.property.StringProperty
+import reactive.design.config.UIConfig
+import reactive.design.data.TerminalLine
+import reactive.design.ui.drawable.DrawableInstances._
 import scalafx.geometry.VPos
 import scalafx.scene.canvas.Canvas
 import scalafx.scene.paint.Color
 
-import reactive.design.data.TerminalLine
-import reactive.design.ui.drawable.DrawableInstances._
-import monix.eval.Task
-import monix.execution.Scheduler.Implicits.global
-
-class Screen() extends Canvas {
+class Screen extends Canvas {
   implicit val gc = graphicsContext2D
-  gc.font = UiConfig.font
+  gc.font = UIConfig.font
   gc.textBaseline = VPos.Top
   requestFocus()
 

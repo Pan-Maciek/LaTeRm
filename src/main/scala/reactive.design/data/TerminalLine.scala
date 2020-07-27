@@ -65,7 +65,7 @@ final class TerminalLine {
 
       val (j, merge) =
         if (block.to == column) {
-          // Check neighours for merge
+          // Check neighbours for merge
           val shiftFrom = if (block.style == style) {
             // append to left
             val left = block
@@ -85,8 +85,8 @@ final class TerminalLine {
           (shiftFrom, false)
         } else {
           // split block
-          val (left, middle, unshiftedRight) = block.split(column, style)
-          val right                          = unshiftedRight.copy(to = unshiftedRight.to + 1)
+          val (left, middle, toShiftRight) = block.split(column, style)
+          val right                          = toShiftRight.copy(to = toShiftRight.to + 1)
           val iterable                       = List(middle, right)
 
           blocks(i) = left
@@ -143,7 +143,7 @@ final class TerminalLine {
       }
 
     val shiftBy = -column
-    shiftBlocks(shiftFrom, -column)
+    shiftBlocks(shiftFrom, shiftBy)
 
     if (blocksSize() == 0)
       blocks.append(Block.empty)
@@ -173,6 +173,7 @@ final class TerminalLine {
   def clearLine(): Unit = deleteFrom(0)
 
   /** Merges starting with block at `i`, note that this should also remove empty blocks.*/
+  //noinspection DuplicatedCode
   private def mergeAt(i: Int): Unit = {
     var block  = blocks(i)
     var blockI = i
@@ -192,7 +193,7 @@ final class TerminalLine {
     }
 
     // merge right
-    var rightI = blockI + 1
+    val rightI = blockI + 1
     while (rightI < blocks.length && (blocks(rightI).style == block.style || blocks(rightI).len == 0)) {
       val right = blocks(rightI)
       if (right.len != 0)

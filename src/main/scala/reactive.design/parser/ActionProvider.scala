@@ -1,16 +1,14 @@
 package reactive.design.parser
 
-import java.io.InputStream
-import java.io.InputStreamReader
+import java.io.{InputStream, InputStreamReader}
 import java.nio.charset.StandardCharsets
 
-import monix.reactive.Observable
 import monix.eval.Task
-import monix.reactive.OverflowStrategy
+import monix.reactive.{Observable, OverflowStrategy}
 
 object ActionProvider {
-  def apply(inputStreamT: Task[InputStream]): Observable[Action] = {
-    val task = inputStreamT
+  def apply(inputStream: InputStream): Observable[Action] = {
+    val task = Task { inputStream }
       .map { _.iterator() }
       .map { ActionParser(_) }
     Observable

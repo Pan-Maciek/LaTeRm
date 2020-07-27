@@ -1,14 +1,8 @@
-package reactive.design
+package reactive.design.ui
 
-import reactive.design.data.UIEvent
-import reactive.design.ui.Panel
-
-import monix.reactive.Observable
 import monix.eval.Task
-import reactive.design.data.UIUpdate
-import reactive.design.data.CursorDataPeek
-import reactive.design.data.LinesBuffer
-import reactive.design.data.TerminalLine
+import monix.reactive.Observable
+import reactive.design.data.{UIEvent, UIUpdate}
 
 object UIManager {
   def apply(events: Observable[UIEvent]): (Panel, Task[Unit]) = {
@@ -28,10 +22,10 @@ private class UIManager() {
   def onEvent(event: UIEvent) = {
     event match {
       case UIUpdate(data) => {
-        val recent = data.getRecent()
-        val coords = data.getCursorCoords()
+        val recent = data.recent()
+        val coordinates = data.cursorCoordinates()
 
-        panel.update(recent, coords)
+        panel.update(recent, coordinates)
       }
     }
   }

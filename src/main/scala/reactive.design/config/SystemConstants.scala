@@ -1,7 +1,6 @@
-package config
+package reactive.design.config
 
 object SystemConstants {
-  import java.util._
   import scala.jdk.CollectionConverters._
 
   lazy val environment = System.getenv.asScala
@@ -9,7 +8,7 @@ object SystemConstants {
     osName match {
       case Windows => "c:\\windows\\system32\\cmd.exe"
       case Linux   => "/bin/bash"
-      case Mac     => throw new Exception("Don't know where bash is!")
+      case Mac     => throw new Exception("Don't know where the bash is!")
     }
   }
 
@@ -22,6 +21,6 @@ object SystemConstants {
 }
 
 sealed trait Os
-final case object Windows extends Os
-final case object Linux   extends Os
-final case object Mac     extends Os
+case object Windows extends Os
+case object Linux   extends Os
+case object Mac     extends Os

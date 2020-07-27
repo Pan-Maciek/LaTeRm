@@ -1,30 +1,10 @@
-package reactive.design
+package reactive.design.data
 
-import reactive.design.data.DataPeek
-import reactive.design.data.LinesBuffer
-import reactive.design.data.CursorData
-import reactive.design.data.UIUpdate
-import reactive.design.data.UIEvent
-import reactive.design.parser.Action
-import reactive.design.parser.SetTitle
-import reactive.design.parser.SetStyle
-import reactive.design.parser.MoveCursor
-import reactive.design.parser.SetColumn
-import reactive.design.parser.SetCursor
-import reactive.design.parser.ToggleLatex
-import reactive.design.parser.ClearDisplay
-import reactive.design.parser.ClearLine
-import reactive.design.parser.Bell
-import reactive.design.parser.Ignore
-import reactive.design.parser.SaveCursorPosition
-import reactive.design.parser.RestoreCursorPosition
-import reactive.design.parser.SetCursorVisibility
-import reactive.design.parser.Warn
-import reactive.design.parser.Write
-
-import scala.concurrent.duration._
-import monix.reactive.Observable
 import monix.eval.Task
+import monix.reactive.Observable
+import reactive.design.config.UIConfig
+import reactive.design.parser._
+
 
 /**
   * Responsible for keeping state and forwarding updates to UI by returning Observable[UiUpdate]
@@ -42,13 +22,13 @@ object DataManager {
 
   private def framesObservable(): Observable[FrameT] =
     Observable
-      .intervalWithFixedDelay(80.millis)
+      .intervalWithFixedDelay(UIConfig.updateInterval)
       .map(_ => Frame)
 
 }
 
 sealed trait FrameT
-final case object Frame extends FrameT
+case object Frame extends FrameT
 
 private class DataManager {
   val cursor: CursorData  = new CursorData()
@@ -56,11 +36,11 @@ private class DataManager {
 
   def transform(events: Observable[Either[FrameT, Action]]): Observable[UIEvent] = {
     events
-      .mapEval { event =>
-        event match {
-          case Left(_)       => Task { Some(UIUpdate(DataPeek(buffer, cursor.peek()))) }
-          case Right(action) => execAction(action) *> Task.pure(None)
+      .mapEval {
+        case Left(_) => Task {
+          Some(UIUpdate(DataPeek(buffer, cursor.peek())))
         }
+        case Right(action) => execAction(action) *> Task.pure(None)
       }
       .filter(_.isDefined)
       .map(_.get)
@@ -80,8 +60,8 @@ private class DataManager {
         case SaveCursorPosition           => cursor.savePosition()
         case RestoreCursorPosition        => cursor.restorePosition()
         case SetCursorVisibility(visible) => cursor.setVisibility(visible)
-        case Warn(cause)                  => ()
-        case SetTitle(title)              => ()
+        case Warn(_)                  => ()
+        case SetTitle(_)              => ()
         case Bell                         => ()
         case Ignore                       => ()
       }

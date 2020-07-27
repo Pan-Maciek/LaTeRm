@@ -1,19 +1,18 @@
 package reactive.design.ui.drawable
 
-import scalafx.scene.shape.Rectangle
+import reactive.design.config.UIConfig
 import scalafx.scene.paint.Color
-import scalafx.beans.property.DoubleProperty
-import config.UiConfig
+import scalafx.scene.shape.Rectangle
 
 class Cursor extends Rectangle {
   width = 7.0
-  height = UiConfig.DefaultLineHeight
+  height = UIConfig.defaultLineHeight
   fill = Color.White
 
   var _blink   = false
   var _counter = 0
 
-  def onUpdate(newX: Double, newY: Double): Unit = {
+  def redraw(newX: Double, newY: Double): Unit = {
     relocate(newX, newY)
     if (_counter % 10 == 0) blink()
     _counter += 1

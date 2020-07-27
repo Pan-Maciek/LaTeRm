@@ -1,13 +1,12 @@
 package reactive.design.data
 
-import scala.math._
-import scalafx.scene.input.KeyCode.D
-import reactive.design.config.TerminalSettings
-import reactive.design.data.Style
+import reactive.design.config.UIConfig
+
+import scala.math.{max, min}
 
 final case class CursorDataPeek(x: Int, y: Int, visible: Boolean, style: Style)
 
-class CursorData(maxWidth: Int = TerminalSettings.defaultMaxCharsInLine) {
+class CursorData(maxWidth: Int = UIConfig.defaultMaxCharsInLine) {
   private var _style: Style = Style.default
   private var visible       = false
 
@@ -46,12 +45,10 @@ class CursorData(maxWidth: Int = TerminalSettings.defaultMaxCharsInLine) {
     this.visible = visible
 
   def translateX(offsetX: Int) = {
-    _x += 1
-    if (_x >= maxWidth) {
-      _x = 0
-      _y += 1
-    }
+    for (_ <- Range(0, offsetX))
+      rightBy1()
   }
+
 
   def translate(offsetX: Int, offsetY: Int): Unit = {
     _x = max(0, min(maxWidth, _x + offsetX))
@@ -65,4 +62,12 @@ class CursorData(maxWidth: Int = TerminalSettings.defaultMaxCharsInLine) {
 
   def setColumn(col: Int): Unit =
     _x = max(0, min(maxWidth, col - 1))
+
+  private def rightBy1() = {
+    _x += 1
+    if (_x >= maxWidth) {
+      _x = 0
+      _y += 1
+    }
+  }
 }

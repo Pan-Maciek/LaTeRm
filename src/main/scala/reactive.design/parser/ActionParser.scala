@@ -1,21 +1,15 @@
 package reactive.design.parser
 
-import java.io.{BufferedReader, InputStream, InputStreamReader}
-import java.nio.charset.StandardCharsets
-
-import fastparse._
 import fastparse.NoWhitespace._
-
-import monix.reactive.Observable
-import monix.eval.Task
+import fastparse._
 
 object ActionParser {
-  def apply(iter: Iterator[String]): Iterator[Action] = new Iterator[Action] {
-    override def hasNext: Boolean = iter.hasNext
+  def apply(it: Iterator[String]): Iterator[Action] = new Iterator[Action] {
+    override def hasNext: Boolean = it.hasNext
     override def next(): Action = {
-      fastparse.parse(iter, NextAction(_)) match {
+      parse(it, NextAction(_)) match {
         case Parsed.Success(value, _) => value
-        case Parsed.Failure(_, _, _)  => ???
+        case Parsed.Failure(_, _, _)  => Ignore
       }
     }
   }
@@ -50,7 +44,7 @@ object ActionParser {
       case (n, "E") => MoveCursor(Int.MinValue, n) // CNL
       case (n, "F") => MoveCursor(Int.MinValue, -n) // CPL
       case (n, "G") => SetColumn(n) // CHA
-      case _        => ???
+      case _        => Ignore
     }
 
   def specialCharacters[_: P] =
@@ -64,21 +58,21 @@ object ActionParser {
     P(Parameter(1) ~ "H").map {
       case y :: x :: Nil => SetCursor(y, x)
       case y :: Nil      => SetCursor(y, 1)
-      case _             => ???
+      case _             => Ignore
     }
 
   def cursorShowHide[_: P] =
     P("25" ~ CharIn("hl").!).map {
       case "h" => SetCursorVisibility(true)
       case "l" => SetCursorVisibility(false)
-      case _   => ???
+      case _   => Ignore
     }
 
   def cursorHistory[_: P] =
     P(CharIn("su").!).map {
       case "s" => SaveCursorPosition
       case "u" => RestoreCursorPosition
-      case _   => ???
+      case _   => Ignore
     }
 
   def SGR[_: P]: P[SetStyle] =
@@ -90,7 +84,7 @@ object ActionParser {
     P(Number(0) ~ CharIn("JK").!).map {
       case (n, "J") => ClearDisplay(n)
       case (n, "K") => ClearLine(n)
-      case (_, _)   => ???
+      case (_, _)   => Ignore
     }
 
   def oldSchoolCursor[_: P] =

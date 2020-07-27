@@ -1,10 +1,13 @@
 package reactive.design.data
 
-import config.UiConfig
+import reactive.design.config.UIConfig
 import reactive.design.ui.drawable.DrawableInstances._
 
-final case class DataPeek(private val buffer: LinesBuffer, private val cursor: CursorDataPeek) {
-  def getCursorCoords(): (Double, Double) = {
+final case class DataPeek
+  (private val buffer: LinesBuffer,
+   private val cursor: CursorDataPeek ) {
+
+  def cursorCoordinates(): (Double, Double) = {
     val cursorLine = buffer._lines(cursor.y)
     var cursorY    = 0.0
     var (i, _)     = lastLinesIndices()
@@ -18,16 +21,16 @@ final case class DataPeek(private val buffer: LinesBuffer, private val cursor: C
     (cursorX, cursorY)
   }
 
-  /**  Returns list of last lines fitting the screen */
-  def getRecent(): Seq[TerminalLine] = {
-    val (from, until) = lastLinesIndices
+  /**  Returns seq of lines fitting the screen */
+  def recent(): Seq[TerminalLine] = {
+    val (from, until) = lastLinesIndices()
     buffer._lines.slice(from, until).toSeq
   }
 
   private def lastLinesIndices(): (Int, Int) = {
     var i             = buffer.linesCount - 1
     var runningHeight = 0.0
-    val maxH          = UiConfig.height - 25
+    val maxH          = UIConfig.screenHeight - 25
 
     while (i >= 0 && runningHeight < maxH) {
       runningHeight += buffer._lines(i).height

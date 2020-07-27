@@ -1,23 +1,18 @@
 package reactive.design.ui
 
-import scalafx.scene.layout.StackPane
-import java.{util => ju}
-import config.UiConfig
-import scalafx.scene.layout.Pane
-import scalafx.scene.Group
-import reactive.design.ui.drawable.Cursor
-import reactive.design.ui.Screen
 import reactive.design.data.TerminalLine
+import reactive.design.ui.drawable.Cursor
+import scalafx.scene.Group
 
-class Panel() extends Group {
+class Panel extends Group {
   val screen: Screen = new Screen()
-  val curso: Cursor  = new Cursor()
+  val curs: Cursor  = new Cursor()
 
-  children.addAll(screen, curso)
+  children.addAll(screen, curs)
 
-  def update(lines: Iterable[TerminalLine], cursorCoords: (Double, Double)) = {
+  def update(lines: Iterable[TerminalLine], cursorCoordinates: (Double, Double)): Unit = {
     screen.redraw(lines)
-    curso.onUpdate(cursorCoords._1, cursorCoords._2)
+    curs.redraw(cursorCoordinates._1, cursorCoordinates._2)
   }
 
 }

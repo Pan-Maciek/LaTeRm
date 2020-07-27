@@ -1,40 +1,36 @@
+import com.pty4j.{PtyProcess, WinSize}
+import javafx.application.Platform
+import javafx.scene.input.KeyCode.{DOWN, LEFT, RIGHT, UP}
+import monix.eval.Task
+import monix.execution.Scheduler.Implicits.global
+import reactive.design.config.{SystemConstants, UIConfig}
+import reactive.design.data.DataManager
+import reactive.design.parser.ActionProvider
+import reactive.design.ui.UIManager
 import scalafx.application.JFXApp
 import scalafx.application.JFXApp.PrimaryStage
 import scalafx.scene.Scene
-import config.UiConfig
-import scalafx.scene.layout.StackPane
-import javafx.application.Platform
-import com.pty4j.PtyProcess
-import config.SystemConstants
-import scala.jdk.CollectionConverters._
-import com.pty4j.WinSize
-import reactive.design.parser.ActionProvider
-import monix.eval.Task
-import cats.effect.IOApp
-import reactive.design.DataManager
-import reactive.design.UIManager
-import monix.execution.Scheduler.Implicits.global
+
 import scala.concurrent.duration._
-import javafx.scene.input.KeyCode.{DOWN, LEFT, RIGHT, UP}
-import cats.syntax.all._
+import scala.jdk.CollectionConverters._
 
 object Main extends JFXApp {
   import Pty._
   val pty              = Pty()
-  val actions          = ActionProvider(Task { pty.getInputStream() })
+  val actions          = ActionProvider(pty.getInputStream)
   val events           = DataManager(actions)
   val (panel, effects) = UIManager(events)
 
   stage = new PrimaryStage {
-    scene = new Scene(UiConfig.width, UiConfig.height) {
+    scene = new Scene(UIConfig.screenWidth, UIConfig.screenHeight) {
       root = panel
       onKeyTyped = e => pty.write(e.getCharacter.getBytes)
       onKeyPressed = e => {
         val bytes = e.getCode match {
-          case UP    => Some(("\u001b[A".getBytes))
-          case DOWN  => Some(("\u001b[B".getBytes))
-          case RIGHT => Some(("\u001b[C".getBytes))
-          case LEFT  => Some(("\u001b[D".getBytes))
+          case UP    => Some("\u001b[A".getBytes)
+          case DOWN  => Some("\u001b[B".getBytes)
+          case RIGHT => Some("\u001b[C".getBytes)
+          case LEFT  => Some("\u001b[D".getBytes)
           case _     => None
         }
         Task { bytes.map(pty.write) }.runToFuture
@@ -68,6 +64,6 @@ object Pty {
 
   implicit class PtyOps(pty: PtyProcess) {
     def write(bytes: Array[Byte]): Unit =
-      pty.getOutputStream().write(bytes)
+      pty.getOutputStream.write(bytes)
   }
 }

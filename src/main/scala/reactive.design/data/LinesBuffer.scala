@@ -1,9 +1,6 @@
 package reactive.design.data
 
 import scala.collection.mutable.ArrayBuffer
-import reactive.design.ui.drawable.Drawable
-import config.SystemConstants
-import config.Windows
 
 /**
   * Note that function write should be rewritten so that it handles only standard characters write
@@ -93,7 +90,7 @@ class LinesBuffer(cursor: CursorData) {
 
   def appendBlankLines(): Unit = {
     while (cursor.y >= _lines.size) {
-      _lines += (new TerminalLine())
+      _lines += new TerminalLine()
     }
   }
 

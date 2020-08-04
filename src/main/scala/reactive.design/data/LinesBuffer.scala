@@ -73,7 +73,7 @@ class LinesBuffer(cursor: CursorData) {
   }
 
   def eraseAllAndSetCursor(): Unit = {
-    eraseAll()
+    _lines.clearAndShrink(0)
   }
 
   private def eraseAll(): Unit = {

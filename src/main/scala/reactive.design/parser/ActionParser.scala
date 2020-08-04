@@ -1,48 +1,17 @@
-package term
-
-import java.io.{InputStream, InputStreamReader}
-import java.nio.charset.StandardCharsets
+package reactive.design.parser
 
 import fastparse.NoWhitespace._
 import fastparse._
 
-sealed trait Action
-case class Write(char: Char) extends Action
-case class SetTitle(str: String) extends Action
-case class SetStyle(sgr: Seq[Int]) extends Action
-case class MoveCursor(x: Int, y: Int) extends Action
-case class SetColumn(col: Int) extends Action
-case class SetCursor(y: Int, x: Int) extends Action
-case class SetCursorVisibility(visible: Boolean) extends Action
-case class ClearDisplay(clearType: Int) extends Action
-case class ClearLine(clearType: Int) extends Action
-case object SaveCursorPosition extends Action
-case object RestoreCursorPosition extends Action
-case object ToggleLatex extends Action
-case object Ignore extends Action
-case object Bell extends Action
-case class Warn(cause: Any) extends Action
-
 object ActionParser {
-  def parse(input: InputStream): Iterator[Action] = new Iterator[Action] {
-    val reader = new InputStreamReader(input, StandardCharsets.UTF_8)
-    val iter = new Iterator[String] {
-      var _hasNext = true
-      override def hasNext: Boolean = _hasNext
-      override def next(): String   = {
-        val char = reader.read
-        if (char == -1) _hasNext = false
-        char.toChar.toString
+  def apply(it: Iterator[String]): Iterator[Action] = new Iterator[Action] {
+    override def hasNext: Boolean = it.hasNext
+    override def next(): Action = {
+      parse(it, NextAction(_)) match {
+        case Parsed.Success(value, _) => value
+        case Parsed.Failure(_, _, _)  => Ignore
       }
     }
-
-    override def hasNext: Boolean = iter.hasNext
-
-    override def next(): Action =
-      fastparse.parse(iter, NextAction(_)) match {
-        case Parsed.Success(value, _) => value
-        case Parsed.Failure(_, _, _)  => ???
-      }
   }
 
   // https://en.wikipedia.org/wiki/C0_and_C1_control_codes
@@ -69,13 +38,13 @@ object ActionParser {
   def cursorCSI[_: P] =
     P(Number(1) ~ CharIn("A-G").!).map {
       case (n, "A") => MoveCursor(0, -n) // CCU
-      case (n, "B") => MoveCursor(0,  n) // CUD
-      case (n, "C") => MoveCursor(n,  0) // CUF
+      case (n, "B") => MoveCursor(0, n) // CUD
+      case (n, "C") => MoveCursor(n, 0) // CUF
       case (n, "D") => MoveCursor(-n, 0) // CUB
-      case (n, "E") => MoveCursor(Int.MinValue,  n) // CNL
+      case (n, "E") => MoveCursor(Int.MinValue, n) // CNL
       case (n, "F") => MoveCursor(Int.MinValue, -n) // CPL
       case (n, "G") => SetColumn(n) // CHA
-      case _ => ???
+      case _        => Ignore
     }
 
   def specialCharacters[_: P] =
@@ -89,21 +58,21 @@ object ActionParser {
     P(Parameter(1) ~ "H").map {
       case y :: x :: Nil => SetCursor(y, x)
       case y :: Nil      => SetCursor(y, 1)
-      case _ => ???
+      case _             => Ignore
     }
 
   def cursorShowHide[_: P] =
     P("25" ~ CharIn("hl").!).map {
       case "h" => SetCursorVisibility(true)
       case "l" => SetCursorVisibility(false)
-      case _   => ???
+      case _   => Ignore
     }
 
   def cursorHistory[_: P] =
     P(CharIn("su").!).map {
       case "s" => SaveCursorPosition
       case "u" => RestoreCursorPosition
-      case _  => ???
+      case _   => Ignore
     }
 
   def SGR[_: P]: P[SetStyle] =
@@ -115,7 +84,7 @@ object ActionParser {
     P(Number(0) ~ CharIn("JK").!).map {
       case (n, "J") => ClearDisplay(n)
       case (n, "K") => ClearLine(n)
-      case (_, _)   => ???
+      case (_, _)   => Ignore
     }
 
   def oldSchoolCursor[_: P] =
@@ -132,26 +101,27 @@ object ActionParser {
     "\u001b" ~ (
       ("[" ~ (
         clear
-        | cursorCSI
-        | cursorAbsoluteCSI
-        | toggleLatex
-        | cursorHistory
-        | SGR
-        | ignored2
-        | ("?" ~ (
-          cursorShowHide
-          | ignored1 ))
-        ))
-      | ( "]" ~ xOSC)
-      | "=".!.map(_ => Ignore)
-      | oldSchoolCursor
+          | cursorCSI
+          | cursorAbsoluteCSI
+          | toggleLatex
+          | cursorHistory
+          | SGR
+          | ignored2
+          | ("?" ~ (cursorShowHide
+            | ignored1))
+      ))
+        | ("]" ~ xOSC)
+        | "=".!.map(_ => Ignore)
+        | oldSchoolCursor
     )
   )
 
-  def NextAction[_: P]: P[Action] = P(
-    parser
-    | BEL
-    | specialCharacters
-    | "\u001b".!.map(_ => Ignore)
-    | AnyChar.!.map(str => Write(str(0))))
+  def NextAction[_: P]: P[Action] =
+    P(
+      parser
+        | BEL
+        | specialCharacters
+        | "\u001b".!.map(_ => Ignore)
+        | AnyChar.!.map(str => Write(str(0)))
+    )
 }

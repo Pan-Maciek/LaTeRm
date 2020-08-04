@@ -1,14 +1,14 @@
-package gui.drawable
+package reactive.design.ui.drawable
 
 import java.awt.Color
 import java.awt.image.BufferedImage
 
-import config.UiConfig
-import gui.data.TerminalLine
 import javafx.embed.swing.SwingFXUtils
 import javafx.geometry.Bounds
 import javax.swing.JLabel
 import org.scilab.forge.jlatexmath.{TeXConstants, TeXFormula}
+import reactive.design.config.UIConfig
+import reactive.design.data.TerminalLine
 import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.paint.{Color => ColorFX}
 import scalafx.scene.text.Text
@@ -40,7 +40,7 @@ object DrawableInstances {
   implicit class TerminalLineOps(line: TerminalLine) extends Drawable[TerminalLine] {
     override def width: Double = line.blocksSeq().foldLeft(0.0)(_ + _.width)
     override def height: Double =
-      if (line.isEmpty) UiConfig.DefaultLineHeight
+      if (line.isEmpty) UIConfig.defaultLineHeight
       else line.blocksSeq().map(_.height).max
 
     def draw(implicit gc: GraphicsContext): Unit = {
@@ -92,7 +92,7 @@ object DrawableInstances {
 
     private lazy val bounds: Bounds = {
       val textObject = new Text(block.text)
-      textObject.setFont(UiConfig.font)
+      textObject.setFont(UIConfig.font)
       textObject.getBoundsInLocal
     }
 
@@ -115,15 +115,15 @@ object DrawableInstances {
       val until   = col - block.from
       val textObj = new Text(block.text.substring(0, until))
 
-      textObj.setFont(UiConfig.font)
-      textObj.getBoundsInLocal().getWidth()
+      textObj.setFont(UIConfig.font)
+      textObj.getBoundsInLocal.getWidth
     }
 
     def draw(implicit gc: GraphicsContext): Unit = {
       gc.fill = style.background
       gc.fillRect(0, 0, width, height)
       (style.latexRendering, icon) match {
-        case (true, Some(icon)) => {
+        case (true, Some(icon)) =>
           val jl = new JLabel()
           val img =
             new BufferedImage(icon.getIconWidth, icon.getIconHeight, BufferedImage.TYPE_INT_RGB)
@@ -131,15 +131,12 @@ object DrawableInstances {
           jl.setForeground(style.foreground)
           icon.paintIcon(jl, g2, 0, 0)
           gc.drawImage(SwingFXUtils.toFXImage(img, null), 0, 0)
-        }
-        case (true, None) => {
+        case (true, None) =>
           gc.fill = ColorFX.Red
           gc.fillText(block.text, 0, 0)
-        }
-        case (false, _) => {
+        case (false, _) =>
           gc.fill = style.foreground
           gc.fillText(block.text, 0, 0)
-        }
       }
     }
 

@@ -1,12 +1,19 @@
-package gui
+package reactive.design.data
 
 import scalafx.scene.paint.Color
 
-case class Style (
-  foreground: Color,
-  background: Color,
-  latexRendering: Boolean,
-  bold: Boolean
+sealed trait StyleSetter
+case class SetForeground(color: Color) extends StyleSetter
+case class SetBackground(color: Color) extends StyleSetter
+case class SetLatex(on: Boolean)       extends StyleSetter
+case class SetDefault()                    extends StyleSetter
+case class Skip()                          extends StyleSetter
+
+case class Style(
+    foreground: Color,
+    background: Color,
+    latexRendering: Boolean,
+    bold: Boolean
 ) {
   def toggleLatex: Style = copy(latexRendering = !latexRendering)
 
@@ -58,126 +65,125 @@ object Style {
 
   // https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_parameters
   val Sgr4BitColor = Map(
-    30 -> Color.rgb(1,1,1), // Black
-    31 -> Color.rgb(222,56,43), // Red
-    32 -> Color.rgb(57,181,74), // Green
-    33 -> Color.rgb(255,199,6), // Yellow
-    34 -> Color.rgb(0,111,184), // Blue
-    35 -> Color.rgb(118,38,113), // Magenta
-    36 -> Color.rgb(44,181,233), // Cyan
-    37 -> Color.rgb(204,204,204), // White
-
-    90 -> Color.rgb(128,128,128), // Bright Black
-    91 -> Color.rgb(255,0,0), // Bright Red
-    92 -> Color.rgb(0,255,0), // Bright Green
-    93 -> Color.rgb(255,255,0), // Bright Yellow
-    94 -> Color.rgb(0,0,255), // Bright Blue
-    95 -> Color.rgb(255,0,255), // Bright Magenta
-    96 -> Color.rgb(0,255,255), // Bright Cyan
-    97 -> Color.rgb(255,255,255), // Bright White
+    30 -> Color.rgb(1, 1, 1),       // Black
+    31 -> Color.rgb(222, 56, 43),   // Red
+    32 -> Color.rgb(57, 181, 74),   // Green
+    33 -> Color.rgb(255, 199, 6),   // Yellow
+    34 -> Color.rgb(0, 111, 184),   // Blue
+    35 -> Color.rgb(118, 38, 113),  // Magenta
+    36 -> Color.rgb(44, 181, 233),  // Cyan
+    37 -> Color.rgb(204, 204, 204), // White
+    90 -> Color.rgb(128, 128, 128), // Bright Black
+    91 -> Color.rgb(255, 0, 0),     // Bright Red
+    92 -> Color.rgb(0, 255, 0),     // Bright Green
+    93 -> Color.rgb(255, 255, 0),   // Bright Yellow
+    94 -> Color.rgb(0, 0, 255),     // Bright Blue
+    95 -> Color.rgb(255, 0, 255),   // Bright Magenta
+    96 -> Color.rgb(0, 255, 255),   // Bright Cyan
+    97 -> Color.rgb(255, 255, 255)  // Bright White
   )
 
   val Sgr8BitColor = Map(
-    0 -> Color.rgb(0, 0, 0),
-    1 -> Color.rgb(128, 0, 0),
-    2 -> Color.rgb(0, 128, 0),
-    3 -> Color.rgb(128, 128, 0),
-    4 -> Color.rgb(0, 0, 128),
-    5 -> Color.rgb(128, 0, 128),
-    6 -> Color.rgb(0, 128, 128),
-    7 -> Color.rgb(192, 192, 192),
-    8 -> Color.rgb(128, 128, 128),
-    9 -> Color.rgb(255, 0, 0),
-    10 -> Color.rgb(0, 255, 0),
-    11 -> Color.rgb(255, 255, 0),
-    12 -> Color.rgb(0, 0, 255),
-    13 -> Color.rgb(255, 0, 255),
-    14 -> Color.rgb(0, 255, 255),
-    15 -> Color.rgb(255, 255, 255),
-    16 -> Color.rgb(0, 0, 0),
-    17 -> Color.rgb(0, 0, 95),
-    18 -> Color.rgb(0, 0, 135),
-    19 -> Color.rgb(0, 0, 175),
-    20 -> Color.rgb(0, 0, 215),
-    21 -> Color.rgb(0, 0, 255),
-    22 -> Color.rgb(0, 95, 0),
-    23 -> Color.rgb(0, 95, 95),
-    24 -> Color.rgb(0, 95, 135),
-    25 -> Color.rgb(0, 95, 175),
-    26 -> Color.rgb(0, 95, 215),
-    27 -> Color.rgb(0, 95, 255),
-    28 -> Color.rgb(0, 135, 0),
-    29 -> Color.rgb(0, 135, 95),
-    30 -> Color.rgb(0, 135, 135),
-    31 -> Color.rgb(0, 135, 175),
-    32 -> Color.rgb(0, 135, 215),
-    33 -> Color.rgb(0, 135, 255),
-    34 -> Color.rgb(0, 175, 0),
-    35 -> Color.rgb(0, 175, 95),
-    36 -> Color.rgb(0, 175, 135),
-    37 -> Color.rgb(0, 175, 175),
-    38 -> Color.rgb(0, 175, 215),
-    39 -> Color.rgb(0, 175, 255),
-    40 -> Color.rgb(0, 215, 0),
-    41 -> Color.rgb(0, 215, 95),
-    42 -> Color.rgb(0, 215, 135),
-    43 -> Color.rgb(0, 215, 175),
-    44 -> Color.rgb(0, 215, 215),
-    45 -> Color.rgb(0, 215, 255),
-    46 -> Color.rgb(0, 255, 0),
-    47 -> Color.rgb(0, 255, 95),
-    48 -> Color.rgb(0, 255, 135),
-    49 -> Color.rgb(0, 255, 175),
-    50 -> Color.rgb(0, 255, 215),
-    51 -> Color.rgb(0, 255, 255),
-    52 -> Color.rgb(95, 0, 0),
-    53 -> Color.rgb(95, 0, 95),
-    54 -> Color.rgb(95, 0, 135),
-    55 -> Color.rgb(95, 0, 175),
-    56 -> Color.rgb(95, 0, 215),
-    57 -> Color.rgb(95, 0, 255),
-    58 -> Color.rgb(95, 95, 0),
-    59 -> Color.rgb(95, 95, 95),
-    60 -> Color.rgb(95, 95, 135),
-    61 -> Color.rgb(95, 95, 175),
-    62 -> Color.rgb(95, 95, 215),
-    63 -> Color.rgb(95, 95, 255),
-    64 -> Color.rgb(95, 135, 0),
-    65 -> Color.rgb(95, 135, 95),
-    66 -> Color.rgb(95, 135, 135),
-    67 -> Color.rgb(95, 135, 175),
-    68 -> Color.rgb(95, 135, 215),
-    69 -> Color.rgb(95, 135, 255),
-    70 -> Color.rgb(95, 175, 0),
-    71 -> Color.rgb(95, 175, 95),
-    72 -> Color.rgb(95, 175, 135),
-    73 -> Color.rgb(95, 175, 175),
-    74 -> Color.rgb(95, 175, 215),
-    75 -> Color.rgb(95, 175, 255),
-    76 -> Color.rgb(95, 215, 0),
-    77 -> Color.rgb(95, 215, 95),
-    78 -> Color.rgb(95, 215, 135),
-    79 -> Color.rgb(95, 215, 175),
-    80 -> Color.rgb(95, 215, 215),
-    81 -> Color.rgb(95, 215, 255),
-    82 -> Color.rgb(95, 255, 0),
-    83 -> Color.rgb(95, 255, 95),
-    84 -> Color.rgb(95, 255, 135),
-    85 -> Color.rgb(95, 255, 175),
-    86 -> Color.rgb(95, 255, 215),
-    87 -> Color.rgb(95, 255, 255),
-    88 -> Color.rgb(135, 0, 0),
-    89 -> Color.rgb(135, 0, 95),
-    90 -> Color.rgb(135, 0, 135),
-    91 -> Color.rgb(135, 0, 175),
-    92 -> Color.rgb(135, 0, 215),
-    93 -> Color.rgb(135, 0, 255),
-    94 -> Color.rgb(135, 95, 0),
-    95 -> Color.rgb(135, 95, 95),
-    96 -> Color.rgb(135, 95, 135),
-    97 -> Color.rgb(135, 95, 175),
-    98 -> Color.rgb(135, 95, 215),
-    99 -> Color.rgb(135, 95, 255),
+    0   -> Color.rgb(0, 0, 0),
+    1   -> Color.rgb(128, 0, 0),
+    2   -> Color.rgb(0, 128, 0),
+    3   -> Color.rgb(128, 128, 0),
+    4   -> Color.rgb(0, 0, 128),
+    5   -> Color.rgb(128, 0, 128),
+    6   -> Color.rgb(0, 128, 128),
+    7   -> Color.rgb(192, 192, 192),
+    8   -> Color.rgb(128, 128, 128),
+    9   -> Color.rgb(255, 0, 0),
+    10  -> Color.rgb(0, 255, 0),
+    11  -> Color.rgb(255, 255, 0),
+    12  -> Color.rgb(0, 0, 255),
+    13  -> Color.rgb(255, 0, 255),
+    14  -> Color.rgb(0, 255, 255),
+    15  -> Color.rgb(255, 255, 255),
+    16  -> Color.rgb(0, 0, 0),
+    17  -> Color.rgb(0, 0, 95),
+    18  -> Color.rgb(0, 0, 135),
+    19  -> Color.rgb(0, 0, 175),
+    20  -> Color.rgb(0, 0, 215),
+    21  -> Color.rgb(0, 0, 255),
+    22  -> Color.rgb(0, 95, 0),
+    23  -> Color.rgb(0, 95, 95),
+    24  -> Color.rgb(0, 95, 135),
+    25  -> Color.rgb(0, 95, 175),
+    26  -> Color.rgb(0, 95, 215),
+    27  -> Color.rgb(0, 95, 255),
+    28  -> Color.rgb(0, 135, 0),
+    29  -> Color.rgb(0, 135, 95),
+    30  -> Color.rgb(0, 135, 135),
+    31  -> Color.rgb(0, 135, 175),
+    32  -> Color.rgb(0, 135, 215),
+    33  -> Color.rgb(0, 135, 255),
+    34  -> Color.rgb(0, 175, 0),
+    35  -> Color.rgb(0, 175, 95),
+    36  -> Color.rgb(0, 175, 135),
+    37  -> Color.rgb(0, 175, 175),
+    38  -> Color.rgb(0, 175, 215),
+    39  -> Color.rgb(0, 175, 255),
+    40  -> Color.rgb(0, 215, 0),
+    41  -> Color.rgb(0, 215, 95),
+    42  -> Color.rgb(0, 215, 135),
+    43  -> Color.rgb(0, 215, 175),
+    44  -> Color.rgb(0, 215, 215),
+    45  -> Color.rgb(0, 215, 255),
+    46  -> Color.rgb(0, 255, 0),
+    47  -> Color.rgb(0, 255, 95),
+    48  -> Color.rgb(0, 255, 135),
+    49  -> Color.rgb(0, 255, 175),
+    50  -> Color.rgb(0, 255, 215),
+    51  -> Color.rgb(0, 255, 255),
+    52  -> Color.rgb(95, 0, 0),
+    53  -> Color.rgb(95, 0, 95),
+    54  -> Color.rgb(95, 0, 135),
+    55  -> Color.rgb(95, 0, 175),
+    56  -> Color.rgb(95, 0, 215),
+    57  -> Color.rgb(95, 0, 255),
+    58  -> Color.rgb(95, 95, 0),
+    59  -> Color.rgb(95, 95, 95),
+    60  -> Color.rgb(95, 95, 135),
+    61  -> Color.rgb(95, 95, 175),
+    62  -> Color.rgb(95, 95, 215),
+    63  -> Color.rgb(95, 95, 255),
+    64  -> Color.rgb(95, 135, 0),
+    65  -> Color.rgb(95, 135, 95),
+    66  -> Color.rgb(95, 135, 135),
+    67  -> Color.rgb(95, 135, 175),
+    68  -> Color.rgb(95, 135, 215),
+    69  -> Color.rgb(95, 135, 255),
+    70  -> Color.rgb(95, 175, 0),
+    71  -> Color.rgb(95, 175, 95),
+    72  -> Color.rgb(95, 175, 135),
+    73  -> Color.rgb(95, 175, 175),
+    74  -> Color.rgb(95, 175, 215),
+    75  -> Color.rgb(95, 175, 255),
+    76  -> Color.rgb(95, 215, 0),
+    77  -> Color.rgb(95, 215, 95),
+    78  -> Color.rgb(95, 215, 135),
+    79  -> Color.rgb(95, 215, 175),
+    80  -> Color.rgb(95, 215, 215),
+    81  -> Color.rgb(95, 215, 255),
+    82  -> Color.rgb(95, 255, 0),
+    83  -> Color.rgb(95, 255, 95),
+    84  -> Color.rgb(95, 255, 135),
+    85  -> Color.rgb(95, 255, 175),
+    86  -> Color.rgb(95, 255, 215),
+    87  -> Color.rgb(95, 255, 255),
+    88  -> Color.rgb(135, 0, 0),
+    89  -> Color.rgb(135, 0, 95),
+    90  -> Color.rgb(135, 0, 135),
+    91  -> Color.rgb(135, 0, 175),
+    92  -> Color.rgb(135, 0, 215),
+    93  -> Color.rgb(135, 0, 255),
+    94  -> Color.rgb(135, 95, 0),
+    95  -> Color.rgb(135, 95, 95),
+    96  -> Color.rgb(135, 95, 135),
+    97  -> Color.rgb(135, 95, 175),
+    98  -> Color.rgb(135, 95, 215),
+    99  -> Color.rgb(135, 95, 255),
     100 -> Color.rgb(135, 135, 0),
     101 -> Color.rgb(135, 135, 95),
     102 -> Color.rgb(135, 135, 135),

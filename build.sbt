@@ -1,6 +1,6 @@
 scalaVersion := "2.13.1"
 name := "laterm"
-version := "0.1"
+version := "1.0"
 
 resolvers += "pty4j" at "https://jetbrains.bintray.com/pty4j"
 
@@ -13,6 +13,13 @@ libraryDependencies += "org.scalactic"            %% "scalactic"                
 libraryDependencies += "com.lihaoyi"              %% "fastparse"                % "2.3.0"
 libraryDependencies += "org.scalatest"            %% "scalatest"                % "3.1.1" % "test"
 libraryDependencies += "org.scalatestplus"        %% "scalatestplus-scalacheck" % "3.1.0.0-RC2" % Test
+
+// FP!
+libraryDependencies += "org.typelevel" %% "cats-core"      % "2.1.1"
+libraryDependencies += "org.typelevel" %% "cats-effect"    % "2.1.4"
+libraryDependencies += "io.monix"      %% "monix"          % "3.2.2"
+libraryDependencies += "io.monix"      %% "monix-reactive" % "3.2.2"
+libraryDependencies += "io.monix"      %% "monix-eval"     % "3.2.2"
 
 lazy val osName = System.getProperty("os.name") match {
   case n if n.startsWith("Linux")   => "linux"
@@ -31,7 +38,9 @@ libraryDependencies ++= javaFXModules.map(m =>
 scalacOptions ++= Seq(
   "-unchecked",
   "-deprecation",
-  "-Xfatal-warnings"
+  "-Xfatal-warnings",
+  "-language:postfixOps",
+  "-language:higherKinds"
 )
 
 // force to use separate jvm for sbt

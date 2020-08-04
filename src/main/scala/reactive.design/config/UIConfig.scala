@@ -19,5 +19,5 @@ object UIConfig {
 
   lazy val defaultMaxCharsInLine: Int = 86
 
-  lazy val updateInterval = 80.millis
+  lazy val updateInterval = 100 millis
 }

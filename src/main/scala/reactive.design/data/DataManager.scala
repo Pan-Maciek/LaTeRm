@@ -34,15 +34,21 @@ private class DataManager {
   val cursor: CursorData  = new CursorData()
   val buffer: LinesBuffer = new LinesBuffer(cursor)
 
+  var _modified: Boolean = false
+  def manageState(modified: Boolean): Task[Unit] = Task.pure { _modified = true }
+
   def transform(events: Observable[Either[FrameT, Action]]): Observable[UIEvent] = {
     events
       .mapEval {
-        case Left(_) => Task {
-          Some(UIUpdate(DataPeek(buffer, cursor.peek())))
-        }
-        case Right(action) => execAction(action) *> Task.pure(None)
+        case Left(_) =>
+          Task.pure { Some{ UIUpdate(DataPeek(buffer, cursor.peek())) } }
+        case Right(action) =>
+          manageState(true) *>
+          execAction(action) *>
+          Task.pure(None)
       }
-      .filter(_.isDefined)
+      .filter(_.isDefined && _modified)
+      .mapEval(manageState(false) *> Task(_))
       .map(_.get)
   }
 

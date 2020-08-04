@@ -4,6 +4,9 @@ import scala.collection.Searching._
 import scala.collection.mutable
 import scala.language.implicitConversions
 
+/**
+ *This is actually fairly complicated class filled with imperative code aiming to be as efficient as possible.
+*/
 final class TerminalLine {
 
   private val sb     = new StringBuilder

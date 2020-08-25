@@ -6,8 +6,8 @@ sealed trait StyleSetter
 case class SetForeground(color: Color) extends StyleSetter
 case class SetBackground(color: Color) extends StyleSetter
 case class SetLatex(on: Boolean)       extends StyleSetter
-case class SetDefault()                    extends StyleSetter
-case class Skip()                          extends StyleSetter
+case class SetDefault()                extends StyleSetter
+case class Skip()                      extends StyleSetter
 
 case class Style(
     foreground: Color,
@@ -51,6 +51,7 @@ case class Style(
 
       case 1 :: tail => applySgr(style.copy(bold = true), tail)
       case 0 :: tail => applySgr(Style.default, tail)
+      case _         => style
     }
   }
 }

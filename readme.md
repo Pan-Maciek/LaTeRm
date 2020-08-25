@@ -17,8 +17,8 @@ It was actually a bit tricky since normal terminals assume that each line has th
 
 As this is just an educational project there are still some bugs and things left undone:
 
-- handling resizing
-- giving possibility to change the font and color palette (althoug we support 24bit colors - which used to be pretty rare among terminals :))
+- handling resizing and signals
+- giving possibility to change the font and color palette (although we support 24bit colors - which used to be pretty rare among terminals :))
 - and handling the rest of console controll codes - right now we ignore things that we don't handle
   but for some programs this may lead to corrupted view (messed up foreground colors etc..)
 

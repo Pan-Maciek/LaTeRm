@@ -5,6 +5,8 @@ project/
 target/
 build/
 
+ __pycache__
+
 # eclipse
 build
 .classpath

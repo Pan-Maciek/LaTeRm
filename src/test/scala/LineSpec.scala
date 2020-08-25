@@ -2,11 +2,10 @@ import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import scalafx.scene.paint.Color
 import org.scalatestplus.scalacheck.Checkers
-import gui._
-import gui.data._
-import gui.Style
 import org.scalacheck.Gen
 import org.scalacheck.Arbitrary
+import reactive.design.data.Style
+import reactive.design.data.TerminalLine
 
 class TerminalLineSpec extends AnyFlatSpec with Checkers {
   val default = Style.default

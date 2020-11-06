@@ -4,7 +4,7 @@
 
 ![Alt Text](https://j.gifs.com/p8A6w2.gif)
 
-### Powerful enaugh to handle vim
+### Powerful enough to handle vim
 
 ![Alt Text](https://j.gifs.com/oVz9YK.gif)
 
